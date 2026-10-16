@@ -1015,7 +1015,7 @@
                 if (data && data.ok && data.valid) {
                     sessionStorage.removeItem('adminLoginLockedUntil');
                     sessionStorage.setItem('adminUnlocked', '1');
-                    sessionStorage.setItem('adminPasswordCache', password);
+                    sessionStorage.removeItem('adminPasswordCache');
                     document.body.classList.remove('admin-locked');
                     document.getElementById('adminLoginGate').remove();
                     loadAdminNotices();
