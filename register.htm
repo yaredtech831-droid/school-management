@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="am" id="htmlTag">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.style.visibility = 'hidden';</script>
+<title>የክፍል ምዝገባ | Grade Registration</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        background-color: #eef6ff !important;
+        background-image: linear-gradient(rgba(238,246,255,0.85), rgba(248,251,255,0.9));
+    }
+    html.dark body {
+        background-color: #0b1730 !important;
+        background-image: linear-gradient(rgba(11,23,48,0.9), rgba(6,15,33,0.94));
+    }
+    .step-hidden { display: none !important; }
+    .register-card { backdrop-filter: blur(10px); box-shadow: 0 18px 45px rgba(30,64,175,.10); }
+    .register-hero { background: linear-gradient(135deg, rgba(79,70,229,.98), rgba(14,165,233,.94)); box-shadow: 0 20px 55px rgba(37,99,235,.22); }
+    .spin { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="min-h-screen font-sans text-slate-800 dark:text-slate-100">
+
+<header class="max-w-xl mx-auto px-4 pt-6 flex items-center justify-between">
+    <h1 class="text-lg font-bold" id="headerTitle" data-i18n="headerTitle">የክፍል ምዝገባ</h1>
+    <div class="flex items-center gap-2">
+        <select id="langSelect" onchange="changeLanguage(this.value)" class="text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1">
+            <option value="am">አማ</option>
+            <option value="en">EN</option>
+        </select>
+        <button onclick="toggleDark()" class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center">
+            <i class="fa-solid fa-moon dark:hidden"></i>
+            <i class="fa-solid fa-sun hidden dark:inline text-amber-300"></i>
+        </button>
+    </div>
+</header>
+
+<main class="max-w-2xl mx-auto px-4 py-6 space-y-5">
+    <section class="register-hero rounded-3xl p-6 text-white relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10"></div>
+        <div class="absolute -left-10 -bottom-10 w-40 h-40 rounded-full bg-white/10"></div>
+        <div class="relative flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-2xl"><i class="fa-solid fa-user-graduate"></i></div>
+            <div>
+                <h2 class="text-2xl font-black" data-i18n="heroTitle">የተማሪ ክፍል ምዝገባ</h2>
+                <p class="text-sm text-white/80 mt-1" data-i18n="heroSub">ኢሜይልዎን ያረጋግጡ፣ ከዚያ የተማሪ መረጃዎን ያስገቡ።</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ STEP 1: EMAIL + OTP REQUEST ============ -->
+    <div id="step1" class="register-card bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow p-5 space-y-3 border border-slate-200 dark:border-slate-800">
+        <h2 class="font-bold text-base" data-i18n="step1Title">ደረጃ 1 — ኢሜይል ያረጋግጡ</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="step1Sub">የማረጋገጫ ኮድ (OTP) ወደ ኢሜይልዎ እንልካለን።</p>
+        <input id="emailInput" type="email" placeholder="you@example.com" data-i18n-placeholder="emailPlaceholder"
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+        <button onclick="requestCode()" id="sendCodeBtn"
+                class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i> <span data-i18n="sendCodeBtn">ኮድ ላክ</span>
+        </button>
+        <p id="step1Msg" class="text-xs font-semibold"></p>
+    </div>
+
+    <!-- ============ OTP VERIFICATION: SAME FIRST PAGE ============ -->
+    <div id="otpVerifyBox" class="register-card step-hidden bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow p-5 space-y-3 border border-indigo-200 dark:border-indigo-900">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <h2 class="font-bold text-base" data-i18n="otpVerifyTitle">የደረሰዎትን OTP ኮድ ያስገቡ</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="otpVerifySub">ኢሜይልዎን ለማረጋገጥ የደረሰዎትን 6 ዲጂት ኮድ እዚህ ያስገቡ።</p>
+            </div>
+            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400" id="verifiedEmailDisplay"></span>
+        </div>
+        <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="123456" data-i18n-placeholder="otpPlaceholder"
+               class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm tracking-widest text-center font-bold">
+        <button onclick="verifyCode()" id="verifyCodeBtn"
+                class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-shield-check"></i> <span data-i18n="verifyCodeBtn">OTP አረጋግጥ</span>
+        </button>
+        <p id="otpMsg" class="text-xs font-semibold"></p>
+    </div>
+
+    <!-- ============ STEP 2: DETAILS AFTER OTP VERIFY ============ -->
+    <div id="step2" class="register-card step-hidden bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow p-5 space-y-3 border border-slate-200 dark:border-slate-800">
+        <h2 class="font-bold text-base" data-i18n="step2Title">ደረጃ 2 — መረጃዎን ያስገቡ</h2>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="prevYearLabel">የቀድሞ ት/ት ዘመን</label>
+                <input id="prevYear" type="text" placeholder="2025/26" data-i18n-placeholder="yearPlaceholder" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="prevGradeLabel">የቀድሞ ክፍል</label>
+                <select id="prevGrade" onchange="onPrevGradeChange()" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="prevSectionLabel">የቀድሞ ሰክሽን</label>
+                <input id="prevSection" type="text" placeholder="A" data-i18n-placeholder="sectionPlaceholder" maxlength="3" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm uppercase">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="prevCodeLabel">የ6 ዲጂት ኮድ</label>
+                <input id="prevCode" type="text" maxlength="6" placeholder="482913" data-i18n-placeholder="codePlaceholder" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm tracking-widest">
+            </div>
+        </div>
+
+        <div>
+            <label class="text-xs font-semibold text-slate-500" data-i18n="nameLabel">የተማሪው ሙሉ ስም</label>
+            <input id="studentName" type="text" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="genderLabel">ጾታ</label>
+                <select id="gender" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+                    <option value="" selected disabled data-i18n-opt="genderPlaceholder">ጾታ ይምረጡ</option>
+                    <option value="Male" data-i18n-opt="male">ወንድ</option>
+                    <option value="Female" data-i18n-opt="female">ሴት</option>
+                    <option value="Other" data-i18n-opt="other">ሌላ</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="ageLabel">ዕድሜ</label>
+                <input id="age" type="number" min="3" max="100" inputmode="numeric" placeholder="15" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="parentPhoneLabel">የወላጅ ስልክ ቁጥር (10 ዲጂት)</label>
+                <input id="parentPhone" type="text" inputmode="numeric" maxlength="10" placeholder="0912345678" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm tracking-wider">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="faydaLabel">Fayda ቁጥር (12 ዲጂት)</label>
+                <input id="faydaNumber" type="text" inputmode="numeric" maxlength="12" placeholder="123456789012" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm tracking-wider">
+            </div>
+        </div>
+
+        <div id="streamWrap" class="step-hidden space-y-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500" data-i18n="streamLabel">የ11ኛ ክፍል የትምህርት ዘርፍ</label>
+                <select id="chosenStream" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm">
+                    <option value="" selected disabled data-i18n-opt="streamPlaceholder">ዘርፍ ይምረጡ</option>
+                    <option value="Natural" data-i18n-opt="natural">የተፈጥሮ ሳይንስ (Natural)</option>
+                    <option value="Social" data-i18n-opt="social">ማህበራዊ ሳይንስ (Social)</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="submitRegistration()" id="submitBtn"
+                class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i> <span data-i18n="submitBtn">ተመዝገብ</span>
+        </button>
+        <p id="step2Msg" class="text-xs font-semibold"></p>
+    </div>
+
+    <!-- ============ STEP 3: RESULT ============ -->
+    <div id="step3" class="register-card step-hidden bg-white/95 dark:bg-slate-900/95 rounded-2xl shadow p-6 text-center space-y-3 border border-slate-200 dark:border-slate-800">
+        <div id="resultIcon" class="text-5xl"></div>
+        <h2 id="resultTitle" class="font-bold text-lg"></h2>
+        <p id="resultBody" class="text-sm text-slate-500 dark:text-slate-400"></p>
+        <div id="resultCodeBox" class="step-hidden bg-emerald-50 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 rounded-xl p-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="yourNewCode">የአዲስ ክፍልዎ ኮድ</p>
+            <p id="newCodeDisplay" class="text-3xl font-black tracking-widest text-emerald-700 dark:text-emerald-300"></p>
+        </div>
+        <button onclick="resetFlow()" class="mt-2 text-sm text-indigo-600 dark:text-indigo-400 font-semibold" data-i18n="startOver">እንደገና ጀምር</button>
+    </div>
+
+</main>
+
+<script>
+    // ==========================================================
+    // !! ከታች ያለውን URL ከ Apps Script Deploy ወስደህ ተካው !!
+    // ==========================================================
+    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw_mm4Za-OJsnLOTlz6uCHV06twXD4sV8_Hko0jAVYCh8lWwh04HfteJ7VxSVvycdOE/exec';
+    const HOST = 'default'; // ከ Apps Script ውስጥ ካለው host ጋር ተመሳሳይ መሆን አለበት
+
+    let currentLang = localStorage.getItem('promoLang') || 'am';
+    let verifiedEmail = '';
+    let promotionVerificationToken = '';
+
+    function backendConfigured() { return BACKEND_URL && BACKEND_URL.indexOf('PASTE_YOUR_APPS_SCRIPT_URL_HERE') === -1; }
+
+    async function postToBackend(payload) {
+        const res = await fetch(BACKEND_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        return await res.json();
+    }
+
+    // ================= I18N =================
+    const I18N = {
+        am: {
+            headerTitle: 'የክፍል ምዝገባ', emailPlaceholder: 'you@example.com', otpPlaceholder: '123456', yearPlaceholder: '2025/26', sectionPlaceholder: 'A', codePlaceholder: '482913', heroTitle: 'የተማሪ ክፍል ምዝገባ', heroSub: 'ኢሜይልዎን ያረጋግጡ፣ ከዚያ የተማሪ መረጃዎን ያስገቡ።',
+            step1Title: 'ደረጃ 1 — ኢሜይል ያረጋግጡ', step1Sub: 'የማረጋገጫ ኮድ (OTP) ወደ ኢሜይልዎ እንልካለን።', sendCodeBtn: 'ኮድ ላክ', otpVerifyTitle: 'የደረሰዎትን OTP ኮድ ያስገቡ', otpVerifySub: 'ኢሜይልዎን ለማረጋገጥ የደረሰዎትን 6 ዲጂት ኮድ እዚህ ያስገቡ።', verifyCodeBtn: 'OTP አረጋግጥ',
+            step2Title: 'ደረጃ 2 — መረጃዎን ያስገቡ', otpLabel: 'የደረሰዎት ኮድ (OTP)',
+            prevYearLabel: 'የቀድሞ ት/ት ዘመን', prevGradeLabel: 'የቀድሞ ክፍል', prevSectionLabel: 'የቀድሞ ሰክሽን', prevCodeLabel: 'የ6 ዲጂት ኮድ',
+            nameLabel: 'የተማሪው ሙሉ ስም', genderLabel: 'ጾታ', genderPlaceholder: 'ጾታ ይምረጡ', male: 'ወንድ', female: 'ሴት', other: 'ሌላ', ageLabel: 'ዕድሜ', parentPhoneLabel: 'የወላጅ ስልክ ቁጥር (10 ዲጂት)', faydaLabel: 'Fayda ቁጥር (12 ዲጂት)', streamLabel: 'የ11ኛ ክፍል የትምህርት ዘርፍ', streamPlaceholder: 'ዘርፍ ይምረጡ', 
+            submitBtn: 'ተመዝገብ', yourNewCode: 'የአዲስ ክፍልዎ ኮድ', startOver: 'እንደገና ጀምር',
+            msgSent: 'ኮድ ተልኳል — ኢሜይልዎን ይመልከቱ።', msgBadEmail: 'ትክክለኛ ኢሜይል ያስገቡ።', msgLocked: 'ብዙ ጊዜ ተሳስተዋል — ትንሽ ቆይተው ይሞክሩ።',
+            msgSendFailed: 'መላክ አልተሳካም — እንደገና ይሞክሩ።', msgBadRequest: 'እባክዎ ሁሉንም ክፍት ቦታዎች ይሙሉ።', msgInvalidParentPhone: 'የወላጅ ስልክ ቁጥር 10 ዲጂት መሆን አለበት።', msgInvalidFayda: 'Fayda ቁጥር 12 ዲጂት መሆን አለበት።',
+            msgInvalidOtp: 'የተሳሳተ ኮድ ነው።', msgVerificationExpired: 'የኢሜይል ማረጋገጫው ጊዜ አልፎበታል — እንደገና OTP ይጠይቁ።', msgRecordNotFound: 'ከገባው መረጃ ጋር የሚመሳሰል ውጤት አልተገኘም — ስም/ኮድ/ክፍል በድጋሚ ያረጋግጡ።',
+            msgCodeUsed: 'ይህ ኮድ ቀድሞ ጥቅም ላይ ውሏል።', msgAlreadyRegistered: 'ይህ ተማሪ ቀድሞ ተመዝግቧል። ለአንድ ዓመት አንድ ጊዜ ብቻ መመዝገብ ይቻላል።', msgStreamRequired: 'እባክዎ የትምህርት ዘርፍ ይምረጡ።',
+            promotedTitle: 'እንኳን ደስ አለዎት! አልፈዋል 🎉', promotedBody: 'ምዝገባዎ ተጠናቅቋል። አዲሱ ኮድዎን ይያዙት።',
+            detainedTitle: 'ደጋሚ ተማሪ ነዎት', detainedBody: 'የዓመቱ አማካይ ከ50% በታች ስለሆነ በዚሁ ክፍል እንደገና ለመማር ተመዝግበዋል። አዲሱን ኮድ ይያዙት።',
+            errorTitle: 'ስህተት ተፈጥሯል', natural: 'የተፈጥሮ ሳይንስ (Natural)', social: 'ማህበራዊ ሳይንስ (Social)'
+        },
+        en: {
+            headerTitle: 'Grade Registration', emailPlaceholder: 'you@example.com', otpPlaceholder: '123456', yearPlaceholder: '2025/26', sectionPlaceholder: 'A', codePlaceholder: '482913', heroTitle: 'Student Grade Registration', heroSub: 'Verify your email, then enter the student information.',
+            step1Title: 'Step 1 — Verify Email', step1Sub: 'We will send a verification code (OTP) to your email.', sendCodeBtn: 'Send Code', otpVerifyTitle: 'Enter the OTP you received', otpVerifySub: 'Enter the 6-digit code sent to your email to verify it.', verifyCodeBtn: 'Verify OTP',
+            step2Title: 'Step 2 — Enter Your Details', otpLabel: 'Code You Received (OTP)',
+            prevYearLabel: 'Previous Academic Year', prevGradeLabel: 'Previous Grade', prevSectionLabel: 'Previous Section', prevCodeLabel: '6-Digit Code',
+            nameLabel: "Student's Full Name", genderLabel: 'Gender', genderPlaceholder: 'Choose gender', male: 'Male', female: 'Female', other: 'Other', ageLabel: 'Age', parentPhoneLabel: 'Parent Phone Number (10 digits)', faydaLabel: 'Fayda Number (12 digits)', streamLabel: 'Grade 11 stream', streamPlaceholder: 'Choose a stream', 
+            submitBtn: 'Register', yourNewCode: 'Your New Grade Code', startOver: 'Start Over',
+            msgSent: 'Code sent — check your email.', msgBadEmail: 'Please enter a valid email.', msgLocked: 'Too many attempts — please wait and try again.',
+            msgSendFailed: 'Sending failed — please try again.', msgBadRequest: 'Please fill in all fields.', msgInvalidParentPhone: 'Parent phone number must contain exactly 10 digits.', msgInvalidFayda: 'Fayda number must contain exactly 12 digits.',
+            msgInvalidOtp: 'Incorrect code.', msgVerificationExpired: 'Email verification expired — request a new OTP.', msgRecordNotFound: 'No matching result found — please re-check name/code/section.',
+            msgCodeUsed: 'This code has already been used.', msgAlreadyRegistered: 'This student is already registered. A student can register only once for the same academic-year registration.', msgStreamRequired: 'Please select a stream.',
+            promotedTitle: 'Congratulations! You passed 🎉', promotedBody: 'Your registration is complete. Keep the new code below.',
+            detainedTitle: 'Repeater Registration', detainedBody: 'The annual result is below 50%, so you are registered to repeat the same grade. Keep the new code below.',
+            errorTitle: 'An error occurred', natural: 'Natural Science', social: 'Social Science'
+        }
+    };
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('promoLang', lang);
+        document.getElementById('htmlTag').lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (I18N[lang][key]) el.textContent = I18N[lang][key];
+        });
+        document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+            const key = el.getAttribute('data-i18n-opt');
+            if (I18N[lang][key]) el.textContent = I18N[lang][key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (I18N[lang][key]) el.placeholder = I18N[lang][key];
+        });
+        const headerTitle = document.getElementById('headerTitle');
+        if (headerTitle) headerTitle.textContent = I18N[lang].headerTitle;
+        document.title = I18N[lang].headerTitle;
+    }
+
+    function toggleDark() {
+        const html = document.getElementById('htmlTag');
+        html.classList.toggle('dark');
+        localStorage.setItem('promoDark', html.classList.contains('dark') ? '1' : '0');
+    }
+
+    function onPrevGradeChange() {
+        const grade = document.getElementById('prevGrade').value;
+        document.getElementById('streamWrap').classList.toggle('step-hidden', grade !== '10');
+        if (grade !== '10') {
+            document.getElementById('chosenStream').value = '';
+        }
+    }
+
+    function setMsg(elId, text, isError) {
+        const el = document.getElementById(elId);
+        el.textContent = text || '';
+        el.className = 'text-xs font-semibold ' + (isError ? 'text-red-600' : 'text-emerald-600');
+    }
+
+    async function requestCode() {
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email || !email.includes('@')) { setMsg('step1Msg', I18N[currentLang].msgBadEmail, true); return; }
+        if (!backendConfigured()) { setMsg('step1Msg', 'BACKEND_URL not set yet.', true); return; }
+
+        const btn = document.getElementById('sendCodeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i>';
+        try {
+            const res = await postToBackend({ action: 'requestPromotionCode', email, host: HOST });
+            if (res.status === 'sent') {
+                verifiedEmail = email;
+                document.getElementById('verifiedEmailDisplay').textContent = email;
+                document.getElementById('otpVerifyBox').classList.remove('step-hidden');
+                document.getElementById('otpInput').focus();
+                setMsg('step1Msg', I18N[currentLang].msgSent, false);
+            } else if (res.status === 'registration_closed') setMsg('step1Msg', currentLang === 'am' ? 'ምዝገባው በAdmin ተዘግቷል። ምዝገባ ሲከፈት እንደገና ይሞክሩ።' : 'Registration is closed by the administrator. Please try again when it opens.', true);
+            else if (res.status === 'bad_email') setMsg('step1Msg', I18N[currentLang].msgBadEmail, true);
+            else if (res.status === 'locked') setMsg('step1Msg', I18N[currentLang].msgLocked, true);
+            else setMsg('step1Msg', I18N[currentLang].msgSendFailed, true);
+        } catch (e) {
+            setMsg('step1Msg', I18N[currentLang].msgSendFailed, true);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>' + I18N[currentLang].sendCodeBtn + '</span>';
+        }
+    }
+
+    async function verifyCode() {
+        const otp = document.getElementById('otpInput').value.trim();
+        if (!verifiedEmail || !/^\d{6}$/.test(otp)) {
+            setMsg('otpMsg', I18N[currentLang].msgInvalidOtp, true);
+            return;
+        }
+        const btn = document.getElementById('verifyCodeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i>';
+        try {
+            const res = await postToBackend({ action: 'verifyPromotionCode', email: verifiedEmail, otp, host: HOST });
+            if (res.status === 'verified') {
+                promotionVerificationToken = res.verificationToken || '';
+                document.getElementById('otpVerifyBox').classList.add('step-hidden');
+                document.getElementById('step1').classList.add('step-hidden');
+                document.getElementById('step2').classList.remove('step-hidden');
+                document.getElementById('prevYear').focus();
+            } else if (res.status === 'registration_closed') setMsg('otpMsg', currentLang === 'am' ? 'ምዝገባው በAdmin ተዘግቷል።' : 'Registration is closed by the administrator.', true);
+            else if (res.status === 'locked') setMsg('otpMsg', I18N[currentLang].msgLocked, true);
+            else setMsg('otpMsg', I18N[currentLang].msgInvalidOtp, true);
+        } catch (e) {
+            setMsg('otpMsg', I18N[currentLang].errorTitle, true);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-shield-check"></i> <span>' + I18N[currentLang].verifyCodeBtn + '</span>';
+        }
+    }
+
+    async function submitRegistration() {
+        const prevYear = document.getElementById('prevYear').value.trim();
+        const prevGrade = document.getElementById('prevGrade').value;
+        const prevSection = document.getElementById('prevSection').value.trim().toUpperCase();
+        const prevCode = document.getElementById('prevCode').value.trim();
+        const name = document.getElementById('studentName').value.trim();
+        const parentPhone = document.getElementById('parentPhone').value.replace(/\D/g, '');
+        const faydaNumber = document.getElementById('faydaNumber').value.replace(/\D/g, '');
+        const gender = document.getElementById('gender').value;
+        const age = document.getElementById('age').value.trim();
+        const chosenStream = prevGrade === '10' ? document.getElementById('chosenStream').value : '';
+
+        if (!promotionVerificationToken || !prevYear || !prevSection || !prevCode || !name || !parentPhone || !faydaNumber || !gender || !age) {
+            setMsg('step2Msg', I18N[currentLang].msgBadRequest, true);
+            return;
+        }
+        if (!/^\d{10}$/.test(parentPhone)) { setMsg('step2Msg', I18N[currentLang].msgInvalidParentPhone, true); return; }
+        if (!/^\d{12}$/.test(faydaNumber) && !/^\d{16}$/.test(faydaNumber)) { setMsg('step2Msg', I18N[currentLang].msgInvalidFayda, true); return; }
+        if (!/^\d{1,2}$/.test(age) || Number(age) < 3 || Number(age) > 100) { setMsg('step2Msg', currentLang === 'am' ? 'እባክዎ ትክክለኛ ዕድሜ ያስገቡ።' : 'Enter a valid age.', true); return; }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i>';
+        try {
+            const res = await postToBackend({
+                action: 'submitPromotionRegistration',
+                email: verifiedEmail, verificationToken: promotionVerificationToken, host: HOST,
+                prevYear, prevGrade, prevSection, prevCode, name, chosenStream, parentPhone, faydaNumber, gender, age
+            });
+            if (res.status === 'registration_closed') setMsg('step2Msg', currentLang === 'am' ? 'ምዝገባው በAdmin ተዘግቷል። አዲስ ምዝገባ አይቻልም።' : 'Registration is closed by the administrator. New registrations are not allowed.', true);
+            else if (res.status === 'promoted') showResult(true, res);
+            else if (res.status === 'detained') showResult(false, res);
+            else if (res.status === 'invalid_parent_phone') setMsg('step2Msg', I18N[currentLang].msgInvalidParentPhone, true);
+            else if (res.status === 'invalid_gender') setMsg('step2Msg', currentLang === 'am' ? 'ጾታ ይምረጡ።' : 'Choose a gender.', true);
+            else if (res.status === 'invalid_age') setMsg('step2Msg', currentLang === 'am' ? 'ዕድሜ ትክክል አይደለም።' : 'Invalid age.', true);
+            else if (res.status === 'invalid_fayda_number') setMsg('step2Msg', I18N[currentLang].msgInvalidFayda, true);
+            else if (res.status === 'invalid_verification') setMsg('step2Msg', I18N[currentLang].msgVerificationExpired, true);
+            else if (res.status === 'incomplete') setMsg('step2Msg', currentLang === 'am' ? '1ኛ እና 2ኛ ሴሚስተር ውጤት ሁለቱም እስኪሞሉ ድረስ ምዝገባ አይቻልም።' : 'Both semester results must be completed before promotion registration.', true);
+            else if (res.status === 'locked') setMsg('step2Msg', I18N[currentLang].msgLocked, true);
+            else if (res.status === 'record_not_found') setMsg('step2Msg', I18N[currentLang].msgRecordNotFound, true);
+            else if (res.status === 'code_already_used') setMsg('step2Msg', I18N[currentLang].msgCodeUsed, true);
+            else if (res.status === 'already_registered') setMsg('step2Msg', I18N[currentLang].msgAlreadyRegistered, true);
+            else if (res.status === 'stream_required') setMsg('step2Msg', I18N[currentLang].msgStreamRequired, true);
+            else setMsg('step2Msg', I18N[currentLang].errorTitle, true);
+        } catch (e) {
+            setMsg('step2Msg', I18N[currentLang].errorTitle, true);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>' + I18N[currentLang].submitBtn + '</span>';
+        }
+    }
+
+    function showResult(promoted, res) {
+        document.getElementById('step2').classList.add('step-hidden');
+        document.getElementById('step3').classList.remove('step-hidden');
+        const t = I18N[currentLang];
+
+        document.getElementById('resultIcon').innerHTML = promoted
+            ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>'
+            : '<i class="fa-solid fa-circle-exclamation text-amber-500"></i>';
+        document.getElementById('resultTitle').textContent = promoted ? t.promotedTitle : t.detainedTitle;
+        document.getElementById('resultBody').textContent = promoted ? t.promotedBody : t.detainedBody;
+
+        if (res.newCode) {
+            document.getElementById('resultCodeBox').classList.remove('step-hidden');
+            document.getElementById('newCodeDisplay').textContent = res.newCode;
+        } else {
+            document.getElementById('resultCodeBox').classList.add('step-hidden');
+        }
+    }
+
+    function resetFlow() {
+        document.getElementById('step3').classList.add('step-hidden');
+        document.getElementById('step1').classList.remove('step-hidden');
+        document.getElementById('step1Msg').textContent = '';
+        document.getElementById('step2Msg').textContent = '';
+        document.getElementById('emailInput').value = '';
+        document.getElementById('otpInput').value = '';
+        document.getElementById('studentName').value = '';
+        document.getElementById('parentPhone').value = '';
+        document.getElementById('faydaNumber').value = '';
+        document.getElementById('verifiedEmailDisplay').textContent = '';
+        document.getElementById('otpVerifyBox').classList.add('step-hidden');
+        document.getElementById('step2').classList.add('step-hidden');
+        promotionVerificationToken = '';
+        verifiedEmail = '';
+    }
+
+    // ================= INIT =================
+    if (localStorage.getItem('promoDark') === '1') document.getElementById('htmlTag').classList.add('dark');
+    document.getElementById('langSelect').value = currentLang;
+    changeLanguage(currentLang);
+    onPrevGradeChange();
+    document.documentElement.style.visibility = 'visible';
+</script>
+</body>
+</html>
