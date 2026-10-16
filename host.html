@@ -777,9 +777,8 @@
                     sessionStorage.removeItem('studentLoginAttempts');
                     sessionStorage.removeItem('studentLoginLockedUntil');
                     studentEmail = email;
-                    studentPassword = pw;
+                    studentPassword = '';
                     sessionStorage.setItem('studentEmail', email);
-                    sessionStorage.setItem('studentPassword', pw);
                     unlockHostPage();
                 } else if (data && data.status === 'no_account') {
                     showAuthError('loginError', currentHostLang === 'am'
