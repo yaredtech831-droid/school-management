@@ -559,7 +559,7 @@
             if (data && data.status === 'ok') {
                 sessionStorage.removeItem('parentLoginAttempts'); sessionStorage.removeItem('parentLoginLockedUntil');
                 parentEmail = email; parentPassword = pw;
-                sessionStorage.setItem('parentEmail', email); sessionStorage.setItem('parentPassword', pw);
+                sessionStorage.setItem('parentEmail', email); sessionStorage.removeItem('parentPassword');
                 unlockPortal();
             } else if (data && data.status === 'no_account') {
                 showAuthError('loginError', currentLang === 'am' ? 'በዚህ ኢሜይል አካውንት የለም። መጀመሪያ "አካውንት ክፈት" ይጫኑ።' : 'No account with this email. Please sign up first.');
