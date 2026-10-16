@@ -1110,7 +1110,7 @@
                         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 whitespace-pre-line">${escapeHtmlAdminNotice(n.message)}</p>
                         <p class="text-[10px] text-slate-400 mt-1">${escapeHtmlAdminNotice(n.academicYear || (currentLang==='am'?'ዓመት አልተመደበም':'No year assigned'))} · ${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</p>
                     </div>
-                    <button onclick="deleteAdminNotice('${String(n.id).replace(/'/g, "\\'")}')" class="text-rose-600 hover:text-rose-700 shrink-0" title="Delete">
+                    <button onclick="deleteAdminNotice(${escapeHtmlAdminNotice(JSON.stringify(String(n.id)))})" class="text-rose-600 hover:text-rose-700 shrink-0" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>`).join('');
