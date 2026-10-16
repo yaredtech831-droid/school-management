@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="am" id="htmlTag">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.style.visibility = 'hidden';</script>
+<title>የወላጆች ፖርታል - ውጤት እና ክፍያ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        background-color: #ecfdf9 !important;
+        background-image:
+            linear-gradient(rgba(236, 253, 249, 0.80), rgba(240, 253, 250, 0.88)),
+            radial-gradient(circle at 8% 10%, rgba(20, 184, 166, 0.16), transparent 34%),
+            radial-gradient(circle at 92% 12%, rgba(99, 102, 241, 0.12), transparent 32%),
+            url("https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=2000&q=85");
+        background-size: cover, cover, cover, cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    html.dark body {
+        background-color: #06201c !important;
+        background-image:
+            linear-gradient(rgba(4, 24, 22, 0.82), rgba(6, 28, 25, 0.88)),
+            radial-gradient(circle at 8% 10%, rgba(45, 212, 191, 0.16), transparent 34%),
+            radial-gradient(circle at 92% 12%, rgba(129, 140, 248, 0.12), transparent 32%),
+            url("https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=2000&q=85");
+        background-size: cover, cover, cover, cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    button, select, input { transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease; }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(1px) scale(.98); }
+    @media (prefers-reduced-motion: reduce) { button, select, input { transition: none !important; } button:hover, button:active { transform: none; } }
+    body.auth-locked > *:not(#authGate) { display: none !important; }
+    #authGate { position: fixed; inset: 0; z-index: 9999; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 1rem; background: linear-gradient(160deg, #0f766e, #312e81); }
+    #authGate > .relative { position: relative; z-index: 10; display: block; width: 100%; max-width: 24rem; box-sizing: border-box; background: rgba(255,255,255,.97); color: #0f172a; padding: 2rem; border-radius: 1.5rem; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+    html.dark #authGate > .relative { background: rgba(6,28,25,.97); color: white; }
+    .tab-btn.active { background: #0d9488; color: #fff; }
+    .tab-btn { color: #475569; }
+    html.dark .tab-btn { color: #cbd5e1; }
+    .status-pill { display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .65rem; border-radius:9999px; font-weight:800; font-size:.7rem; }
+    .status-pending { background:#fef3c7; color:#92400e; }
+    .status-approved { background:#d1fae5; color:#065f46; }
+    .status-rejected { background:#fee2e2; color:#991b1b; }
+    html.dark .status-pending { background:#78350f; color:#fde68a; }
+    html.dark .status-approved { background:#064e3b; color:#a7f3d0; }
+    html.dark .status-rejected { background:#7f1d1d; color:#fecaca; }
+    #noticesPanel { position:absolute; top:calc(100% + 8px); right:0; z-index:60; width:20rem; max-width:90vw; max-height:70vh; overflow-y:auto; }
+    #noticeBellDot { position:absolute; top:-2px; right:-2px; }
+</style>
+</head>
+<body class="auth-locked bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-200">
+
+<!-- ================= PARENT SIGN UP / LOGIN GATE ================= -->
+<div id="authGate" class="fixed inset-0 z-[9999] overflow-hidden flex items-center justify-center p-4">
+    <div class="relative z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur rounded-3xl shadow-2xl p-8 w-full max-w-sm space-y-3 border border-white/40 dark:border-slate-800">
+        <div class="flex justify-end items-center gap-2">
+            <button onclick="toggleTheme()" id="authThemeBtn" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition text-slate-700 dark:text-white cursor-pointer flex items-center gap-1">
+                <i id="authThemeIcon" class="fa-solid fa-moon text-amber-500"></i> <span id="authThemeText">ጥቁር ጀርባ</span>
+            </button>
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded-lg text-[11px] font-bold">
+                <i class="fa-solid fa-globe text-sky-500"></i>
+                <select id="authLangSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-slate-700 dark:text-white border-none focus:outline-none cursor-pointer">
+                    <option value="am" class="text-slate-900">አማርኛ</option>
+                    <option value="en" class="text-slate-900">English</option>
+                </select>
+            </div>
+        </div>
+        <div class="text-center space-y-2">
+            <div class="w-14 h-14 bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto">
+                <i class="fa-solid fa-people-roof"></i>
+            </div>
+            <h2 class="text-base font-black text-teal-700 dark:text-teal-400" id="authGateSchoolName">SMART-SCHOOL ACADEMY</h2>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="authGateTitle">የወላጅ ፖርታል</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="authGateSub">የልጅዎን ውጤት ለማየትና ክፍያ ለማስገባት አካውንት ይክፈቱ ወይም ይግቡ።</p>
+        </div>
+        <div class="flex gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+            <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-teal-600 text-white" data-i18n="authTabLogin">ግባ (Login)</button>
+            <button id="authTabSignupBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-transparent text-slate-600 dark:text-slate-300" data-i18n="authTabSignup">አካውንት ክፈት</button>
+        </div>
+        <div id="authLoginForm" class="space-y-3">
+            <input type="email" id="loginEmail" placeholder="you@example.com" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-600" onkeydown="if(event.key==='Enter') attemptParentLogin();">
+            <input type="password" id="loginPassword" data-i18n-placeholder="passwordPlaceholder" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-600" onkeydown="if(event.key==='Enter') attemptParentLogin();">
+            <p id="loginError" class="hidden text-xs font-bold text-rose-600 text-center whitespace-pre-line"></p>
+            <button onclick="attemptParentLogin()" id="loginBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-right-to-bracket"></i><span data-i18n="loginBtnText">ግባ</span>
+            </button>
+        </div>
+        <div id="authSignupForm" class="hidden space-y-3">
+            <input type="email" id="signupEmail" placeholder="you@example.com" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            <input type="password" id="signupPassword" data-i18n-placeholder="passwordPlaceholderPlain" placeholder="ፓስወርድ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            <input type="password" id="signupPasswordConfirm" data-i18n-placeholder="passwordConfirmPlaceholder" placeholder="ፓስወርድ በድጋሚ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            <p id="signupError" class="hidden text-xs font-bold text-rose-600 text-center whitespace-pre-line"></p>
+            <button onclick="attemptParentSignup()" id="signupBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-user-plus"></i><span data-i18n="signupBtnText">አካውንት ክፈት</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<header class="bg-slate-900 border-b border-slate-800 text-white p-4 shadow-md relative">
+    <div class="max-w-5xl mx-auto flex justify-between items-center gap-3">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+            <button onclick="logoutParent()" class="bg-rose-600 hover:bg-rose-700 border border-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold transition text-white cursor-pointer shrink-0">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i><span data-i18n="logoutBtn">ውጣ</span>
+            </button>
+            <span class="hidden sm:flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 min-w-0">
+                <i class="fa-solid fa-circle-user text-teal-400 shrink-0"></i>
+                <span id="loggedInEmailBadge" class="truncate"></span>
+            </span>
+        </div>
+        <h1 class="text-base sm:text-lg font-bold flex items-center gap-2 justify-center flex-1 min-w-0">
+            <i class="fa-solid fa-people-roof text-teal-400 shrink-0"></i>
+            <span id="headerSchoolName" class="text-teal-300 truncate">SMART-SCHOOL ACADEMY</span>
+        </h1>
+        <div class="flex items-center gap-2 flex-1 justify-end relative">
+            <button onclick="toggleNoticesPanel()" class="relative bg-slate-800 hover:bg-slate-700 border border-slate-700 w-9 h-9 rounded-xl text-sm transition text-white cursor-pointer flex items-center justify-center">
+                <i class="fa-solid fa-bell"></i>
+                <span id="noticeBellDot" class="hidden bg-rose-500 text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center">0</span>
+            </button>
+            <button onclick="toggleTheme()" id="themeBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition text-white cursor-pointer">
+                <i id="themeIcon" class="fa-solid fa-moon text-amber-300 mr-1"></i> <span id="themeText">ጥቁር ጀርባ</span>
+            </button>
+            <div class="hidden sm:flex items-center gap-1 bg-slate-800 border border-slate-700 px-2 py-1 rounded-xl text-xs font-bold">
+                <i class="fa-solid fa-globe text-sky-400"></i>
+                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-white border-none focus:outline-none cursor-pointer">
+                    <option value="am" class="text-slate-900">አማርኛ</option>
+                    <option value="en" class="text-slate-900">English</option>
+                </select>
+            </div>
+            <div id="noticesPanel" class="hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 space-y-2">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <h4 class="text-sm font-black" data-i18n="noticesTitle">ማስታወቂያዎች</h4>
+                    <button onclick="toggleNoticesPanel()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="noticesList" class="space-y-2 text-xs"></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="modeTabsBar" class="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-1.5 flex gap-1.5">
+        <button id="tabResultBtn" onclick="switchMode('result')" class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="tabResult">ውጤት ይመልከቱ</span>
+        </button>
+        <button id="tabPaymentBtn" onclick="switchMode('payment')" class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-money-bill-transfer"></i> <span data-i18n="tabPayment">ክፍያ ይላኩ</span>
+        </button>
+        <button id="tabHistoryBtn" onclick="switchMode('history')" class="tab-btn flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="tabHistory">የክፍያ ታሪክ</span>
+        </button>
+    </div>
+</div>
+
+<main class="max-w-4xl mx-auto p-4 sm:p-6 w-full flex-grow flex flex-col items-center">
+
+    <!-- ================= RESULT LOOKUP ================= -->
+    <div id="resultPane" class="w-full flex flex-col items-center">
+        <div id="resultSearchCard" class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-lg space-y-4">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto shadow-inner">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <h2 data-i18n="viewResult" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">የልጅዎን ውጤት ይመልከቱ</h2>
+                <p data-i18n="formSub" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል፣ ሰክሽን፣ ኮድ እና ሙሉ ስም ያስገቡ።</p>
+            </div>
+            <div class="space-y-3">
+                <div><label data-i18n="yearLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘመን</label>
+                    <select id="rYear" onchange="populateRGrades()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select></div>
+                <div><label data-i18n="semesterLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሴሚስተር</label>
+                    <select id="rSemester" onchange="populateRGrades()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                        <option value="">-- ሴሚስተር ይምረጡ --</option>
+                        <option value="sem1">1ኛ ሴሚስተር</option>
+                        <option value="sem2">2ኛ ሴሚስተር</option>
+                    </select></div>
+                <div><label data-i18n="gradeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ክፍል</label>
+                    <select id="rGrade" onchange="populateRStreamsOrSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                        <option value="">-- ክፍል ይምረጡ --</option>
+                        <option value="9">Grade 9</option><option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option><option value="12">Grade 12</option>
+                    </select></div>
+                <div id="rStreamContainer" class="hidden"><label data-i18n="streamLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘርፍ</label>
+                    <select id="rStream" onchange="populateRSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                        <option value="Natural">የተፈጥሮ ሳይንስ</option><option value="Social">የማህበራዊ ሳይንስ</option>
+                    </select></div>
+                <div><label data-i18n="sectionLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሰክሽን</label>
+                    <select id="rSection" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select></div>
+                <div><label data-i18n="codeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የ 6 ዲጂት ኮድ</label>
+                    <input type="text" id="rCode" maxlength="6" placeholder="482910" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold tracking-widest border border-slate-300 dark:border-slate-700"></div>
+                <div><label data-i18n="nameLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የልጅዎ ሙሉ ስም</label>
+                    <input type="text" id="rName" placeholder="ያሬድ ቁጭቶ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></div>
+                <button onclick="searchChildResult()" id="rSearchBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2">
+                    <i class="fa-solid fa-magnifying-glass"></i><span data-i18n="showResults">ውጤት አሳይ</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="resultCard" class="hidden bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div>
+                    <h3 id="resStudentName" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">-</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><span data-i18n="codeShort">ኮድ</span>: <span id="resStudentCode" class="font-mono text-amber-600 dark:text-amber-400 font-bold">------</span> | <span data-i18n="classShort">ክፍል</span>: <span id="resStudentClass" class="font-semibold text-teal-600 dark:text-teal-400">--</span> | <span data-i18n="semesterShort">ሴሚስተር</span>: <span id="resStudentSemester" class="font-semibold text-indigo-600 dark:text-indigo-400">--</span></p>
+                </div>
+                <button onclick="resetResultSearch()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> <span data-i18n="searchAnother">ሌላ ልጅ ፈልግ</span>
+                </button>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead><tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                        <th data-i18n="noShort" class="p-3">ተ.ቁ</th><th data-i18n="subjectShort" class="p-3">የትምህርት ዓይነት</th><th data-i18n="scoreShort" class="p-3 text-center">ውጤት (100%)</th>
+                    </tr></thead>
+                    <tbody id="resSubjectsTbody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                </table>
+            </div>
+            <div class="bg-teal-50 dark:bg-slate-800/60 p-4 rounded-2xl flex justify-around items-center text-center border border-teal-100 dark:border-slate-700">
+                <div><span data-i18n="totalShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">ጠቅላላ ድምር</span><span id="resTotalScore" class="text-lg sm:text-xl font-black text-slate-900 dark:text-white">0</span></div>
+                <div class="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
+                <div><span data-i18n="averageShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">አማካይ ውጤት</span><span id="resAvgScore" class="text-lg sm:text-xl font-black text-teal-600 dark:text-teal-400">0.0%</span></div>
+                <div class="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
+                <div><span data-i18n="statusShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">ሁኔታ</span><span id="resStatus" class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAYMENT ================= -->
+    <div id="paymentPane" class="w-full hidden flex-col items-center gap-6">
+        <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-3">
+            <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-circle-info text-teal-600"></i> <span data-i18n="paySettingsTitle">የክፍያ መረጃ</span></h3>
+            <div id="requiredAmountBox" class="text-sm font-bold text-slate-700 dark:text-slate-200"></div>
+            <div id="bankAccountsList" class="grid sm:grid-cols-2 gap-3"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-children text-teal-600"></i> <span data-i18n="selectedChildrenTitle">የተመረጡ ልጆች</span></h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400" data-i18n="selectedChildrenSub">ከአንድ በላይ ልጆችን ማከል ይችላሉ።</p>
+                </div>
+                
+            </div>
+            <div id="selectedPaymentChildrenList" class="space-y-2"></div>
+            <div id="paymentCartSummary" class="hidden border-t border-slate-200 dark:border-slate-700 pt-3 flex items-center justify-between gap-3">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="paymentTotal">ጠቅላላ ክፍያ</span>
+                <span id="paymentCartTotal" class="text-lg font-black text-teal-700 dark:text-teal-400">0.00 Birr</span>
+            </div>
+            <div class="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 p-3 text-[11px] text-amber-800 dark:text-amber-200">
+                <i class="fa-solid fa-shield-halved mr-1"></i>
+                <span data-i18n="paymentSecurityNote">የክፍያ መጠን፣ ተማሪ መረጃ እና የክፍያ ሁኔታ በServer ላይ እንደገና ይረጋገጣሉ።</span>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-lg space-y-4">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto shadow-inner">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h2 data-i18n="submitPaymentTitle" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">የክፍያ ደረሰኝ ላክ</h2>
+                <p data-i18n="submitPaymentSub" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">የከፈሉበትን ደረሰኝ ፎቶ በማንሳት ከታች ያስገቡ፤ አድሚን ካረጋገጠ በኋላ ይጸድቃል።</p>
+            </div>
+            <div class="space-y-3">
+                <div><label data-i18n="ecYearLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘመን</label>
+                    <select id="pYear" onchange="populatePGrades()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select></div>
+                <div><label data-i18n="gradeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ክፍል</label>
+                    <select id="pGrade" onchange="populatePStreamsOrSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                        <option value="">-- ክፍል ይምረጡ --</option>
+                        <option value="9">Grade 9</option><option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option><option value="12">Grade 12</option>
+                    </select></div>
+                <div id="pStreamContainer" class="hidden"><label data-i18n="streamLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘርፍ</label>
+                    <select id="pStream" onchange="populatePSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                        <option value="Natural">የተፈጥሮ ሳይንስ</option><option value="Social">የማህበራዊ ሳይንስ</option>
+                    </select></div>
+                <div><label data-i18n="sectionLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሰክሽን</label>
+                    <select id="pSection" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select></div>
+                <div><label data-i18n="codeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የ 6 ዲጂት ኮድ</label>
+                    <input type="text" id="pCode" maxlength="6" placeholder="482910" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold tracking-widest border border-slate-300 dark:border-slate-700"></div>
+                <div><label data-i18n="nameLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የልጅዎ ሙሉ ስም</label>
+                    <input type="text" id="pName" placeholder="ያሬድ ቁጭቶ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></div>
+                <button onclick="verifyAndAddPaymentChild()" type="button" id="addPaymentChildBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg text-xs cursor-pointer flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-check"></i><span data-i18n="verifyAddChild">ተማሪውን አረጋግጥ እና ጨምር</span>
+                </button>
+                <div><label data-i18n="bankLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የከፈሉበት ባንክ</label>
+                    <select id="pBank" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select></div>
+                <div><label data-i18n="amountLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የከፈሉት መጠን (ብር)</label>
+                    <input type="number" id="pAmount" min="0.01" step="0.01" inputmode="decimal" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></div>
+                <div><label data-i18n="photoLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የደረሰኝ ፎቶ</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <label class="block text-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-3 text-xs font-bold cursor-pointer"><i class="fa-solid fa-folder-open mr-1"></i> ከፋይል ምረጥ<input type="file" id="pPhoto" accept="image/*" class="hidden"></label>
+                      <button type="button" onclick="openReceiptCamera()" class="block w-full text-center rounded-xl bg-teal-600 hover:bg-teal-700 text-white px-3 py-3 text-xs font-bold cursor-pointer"><i class="fa-solid fa-camera mr-1"></i> ካሜራ ክፈት</button>
+                    </div>
+                    <p id="pPhotoName" class="text-xs text-slate-500"></p>
+                    <img id="pPhotoPreview" class="hidden mt-2 max-h-48 rounded-xl border border-slate-300 dark:border-slate-700 mx-auto">
+                </div>
+                <div id="receiptCameraModal" class="hidden fixed inset-0 z-[100] bg-black/80 p-4 flex items-center justify-center">
+                  <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 w-full max-w-lg space-y-3">
+                    <div class="flex items-center justify-between"><h3 class="font-bold text-slate-900 dark:text-white">የደረሰኝ ፎቶ ካሜራ</h3><button type="button" onclick="closeReceiptCamera()" class="rounded-lg px-3 py-2 bg-slate-200 dark:bg-slate-700 font-bold">✕</button></div>
+                    <video id="receiptCameraVideo" autoplay playsinline class="w-full max-h-[55vh] rounded-xl bg-black object-contain"></video>
+                    <canvas id="receiptCameraCanvas" class="hidden"></canvas>
+                    <div class="grid grid-cols-2 gap-2"><button type="button" onclick="captureReceiptPhoto()" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 font-bold">ፎቶ አንሳ</button><button type="button" onclick="closeReceiptCamera()" class="bg-slate-200 dark:bg-slate-700 rounded-xl py-3 font-bold">ዝጋ</button></div>
+                    <p id="receiptCameraMessage" class="text-xs text-rose-600"></p>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="checkPaymentStatus()" class="flex-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold py-2.5 rounded-xl transition text-xs cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-list-check"></i><span data-i18n="checkStatusBtn">ሁኔታ ፈትሽ</span>
+                    </button>
+                    <button onclick="submitPayment()" id="pSubmitBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg text-xs cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i><span data-i18n="submitPaymentBtn">ደረሰኝ ላክ</span>
+                    </button>
+                </div>
+                <p id="paymentStatusMsg" class="hidden text-xs font-bold text-center whitespace-pre-line p-2 rounded-xl"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HISTORY ================= -->
+    <div id="historyPane" class="w-full hidden flex-col items-center">
+        <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-teal-600"></i> <span data-i18n="historyTitle">የላኩት ክፍያዎች</span></h3>
+                <button onclick="loadMyPayments()" class="text-xs font-bold text-teal-600 hover:text-teal-700 cursor-pointer"><i class="fa-solid fa-arrows-rotate mr-1"></i><span data-i18n="refreshBtn">አድስ</span></button>
+            </div>
+            <div id="paymentsHistoryList" class="space-y-3"></div>
+            <p id="paymentsHistoryEmpty" class="hidden text-xs text-slate-500 dark:text-slate-400 text-center py-6" data-i18n="noPaymentsYet">እስካሁን የላኩት ክፍያ የለም።</p>
+        </div>
+    </div>
+</main>
+
+<footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-200 dark:border-slate-800">
+    <p><span id="footerSchoolName" class="font-bold"></span> — <span data-i18n="footerText">የወላጆች ፖርታል &copy; 2026</span></p>
+</footer>
+
+<script>
+    const SCHOOL_NAME = "SMART-SCHOOL ACADEMY";
+    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw_mm4Za-OJsnLOTlz6uCHV06twXD4sV8_Hko0jAVYCh8lWwh04HfteJ7VxSVvycdOE/exec';
+    let isDarkMode = false;
+    let currentLang = localStorage.getItem('parentLang') || 'am';
+
+    let sharedAcademicYearsList = null;
+    let sharedSectionRegistry = null;
+
+    let parentEmail = sessionStorage.getItem('parentEmail') || '';
+    let parentPassword = sessionStorage.getItem('parentPassword') || '';
+
+    // Payment cart: keeps validated children together for the future Chapa flow.
+    // The browser never decides the final amount/status; the backend must re-validate.
+    let selectedPaymentChildren = [];
+    let capturedReceiptFile = null;
+    let receiptCameraStream = null;
+    let paymentConfigCache = null;
+
+    function backendConfigured() { return BACKEND_URL && BACKEND_URL.indexOf('PASTE_YOUR_APPS_SCRIPT_URL_HERE') === -1; }
+    function noCacheUrl(url) { const sep = url.indexOf('?') === -1 ? '?' : '&'; return `${url}${sep}_=${Date.now()}`; }
+    function isValidEmailFormat_(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v||'').trim()); }
+
+    // Stable per-browser device ID required by the backend's one-device account protection.
+    function getParentDeviceId() {
+        const key = 'smartSchoolParentDeviceId';
+        let id = '';
+        try { id = localStorage.getItem(key) || ''; } catch (e) {}
+        if (!id) {
+            id = 'PDEV-' + (window.crypto && crypto.randomUUID
+                ? crypto.randomUUID()
+                : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + '-' + Math.random().toString(36).slice(2));
+            try { localStorage.setItem(key, id); } catch (e) {}
+        }
+        return id;
+    }
+    async function postToBackend(payload) {
+        const requestPayload = Object.assign({}, payload || {});
+        if (!requestPayload.deviceId) requestPayload.deviceId = getParentDeviceId();
+        const res = await fetch(BACKEND_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(requestPayload) });
+        return await res.json();
+    }
+    async function getFromBackend(action, params) {
+        const qs = new URLSearchParams(Object.assign({ action }, params || {}));
+        const res = await fetch(noCacheUrl(`${BACKEND_URL}?${qs.toString()}`), { cache: 'no-store' });
+        return await res.json();
+    }
+
+    // ================= I18N =================
+    const I18N = {
+        am: {
+            authGateTitle: 'የወላጅ ፖርታል', authGateSub: 'የልጅዎን ውጤት ለማየትና ክፍያ ለማስገባት አካውንት ይክፈቱ ወይም ይግቡ።',
+            authTabLogin: 'ግባ (Login)', authTabSignup: 'አካውንት ክፈት', loginBtnText: 'ግባ', signupBtnText: 'አካውንት ክፈት',
+            logoutBtn: 'ውጣ', deleteAccountBtn: 'አካውንት ሰርዝ', tabResult: 'ውጤት ይመልከቱ', tabPayment: 'ክፍያ ይላኩ', tabHistory: 'የክፍያ ታሪክ',
+            viewResult: 'የልጅዎን ውጤት ይመልከቱ', formSub: 'የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል፣ ሰክሽን፣ ኮድ እና ሙሉ ስም ያስገቡ።',
+            yearLabel: 'የትምህርት ዘመን', semesterLabel: 'ሴሚስተር', gradeLabel: 'ክፍል', streamLabel: 'የትምህርት ዘርፍ',
+            sectionLabel: 'ሰክሽን', codeLabel: 'የ 6 ዲጂት ኮድ', nameLabel: 'የልጅዎ ሙሉ ስም', showResults: 'ውጤት አሳይ',
+            codeShort: 'ኮድ', classShort: 'ክፍል', semesterShort: 'ሴሚስተር', searchAnother: 'ሌላ ልጅ ፈልግ',
+            noShort: 'ተ.ቁ', subjectShort: 'የትምህርት ዓይነት', scoreShort: 'ውጤት (100%)', totalShort: 'ጠቅላላ ድምር',
+            averageShort: 'አማካይ ውጤት', statusShort: 'ሁኔታ', paySettingsTitle: 'የክፍያ መረጃ',
+            selectedChildrenTitle: 'የተመረጡ ልጆች', selectedChildrenSub: 'በአንድ ጊዜ የአንድ ተማሪ ክፍያ ብቻ ይላኩ።',
+            addAnotherStudent: 'ሌላ ልጅ ጨምር', paymentTotal: 'ጠቅላላ ክፍያ',
+            paymentSecurityNote: 'የክፍያ መጠን፣ ተማሪ መረጃ እና የክፍያ ሁኔታ በServer ላይ እንደገና ይረጋገጣሉ።',
+            verifyAddChild: 'ተማሪውን አረጋግጥ',
+            submitPaymentTitle: 'የክፍያ ደረሰኝ ላክ', submitPaymentSub: 'የከፈሉበትን ደረሰኝ ፎቶ በማንሳት ከታች ያስገቡ፤ አድሚን ካረጋገጠ በኋላ ይጸድቃል።',
+            ecYearLabel: 'የትምህርት ዘመን', bankLabel: 'የከፈሉበት ባንክ', amountLabel: 'የከፈሉት መጠን (ብር)', photoLabel: 'የደረሰኝ ፎቶ',
+            checkStatusBtn: 'ሁኔታ ፈትሽ', submitPaymentBtn: 'ደረሰኝ ላክ', historyTitle: 'የላኩት ክፍያዎች', refreshBtn: 'አድስ',
+            noPaymentsYet: 'እስካሁን የላኩት ክፍያ የለም።', noticesTitle: 'ማስታወቂያዎች',
+            passwordPlaceholder: '••••••••', passwordPlaceholderPlain: 'ፓስወርድ', passwordConfirmPlaceholder: 'ፓስወርድ በድጋሚ',
+            footerText: 'የወላጆች ፖርታል © 2026'
+        },
+        en: {
+            authGateTitle: 'Parent Portal', authGateSub: 'Sign up or log in to view your child\'s results and submit payments.',
+            authTabLogin: 'Login', authTabSignup: 'Sign Up', loginBtnText: 'Log In', signupBtnText: 'Sign Up',
+            logoutBtn: 'Log Out', deleteAccountBtn: 'Delete Account', tabResult: 'View Results', tabPayment: 'Submit Payment', tabHistory: 'Payment History',
+            viewResult: 'View Your Child\'s Result', formSub: 'Enter the academic year, semester, grade, section, code and full name.',
+            yearLabel: 'Academic Year', semesterLabel: 'Semester', gradeLabel: 'Grade', streamLabel: 'Stream',
+            sectionLabel: 'Section', codeLabel: '6-Digit Code', nameLabel: 'Child\'s Full Name', showResults: 'Show Result',
+            codeShort: 'Code', classShort: 'Class', semesterShort: 'Semester', searchAnother: 'Search another child',
+            noShort: 'No.', subjectShort: 'Subject', scoreShort: 'Score (100%)', totalShort: 'Total',
+            averageShort: 'Average', statusShort: 'Status', paySettingsTitle: 'Payment Info',
+            selectedChildrenTitle: 'Selected Students', selectedChildrenSub: 'Submit payment for one student at a time.',
+            addAnotherStudent: 'Another Student', paymentTotal: 'Total Payment',
+            paymentSecurityNote: 'Payment amount, student identity and payment status are re-validated on the server.',
+            verifyAddChild: 'Verify Student',
+            submitPaymentTitle: 'Submit Payment Receipt', submitPaymentSub: 'Take a photo of your payment receipt and submit it below; it will be reviewed by the admin.',
+            ecYearLabel: 'Academic Year', bankLabel: 'Bank You Paid To', amountLabel: 'Amount Paid (Birr)', photoLabel: 'Receipt Photo',
+            checkStatusBtn: 'Check Status', submitPaymentBtn: 'Submit Receipt', historyTitle: 'Your Submitted Payments', refreshBtn: 'Refresh',
+            noPaymentsYet: 'You have not submitted any payments yet.', noticesTitle: 'Notices',
+            passwordPlaceholder: '••••••••', passwordPlaceholderPlain: 'Password', passwordConfirmPlaceholder: 'Confirm password',
+            footerText: 'Parent Portal © 2026'
+        }
+    };
+
+    function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || key; }
+
+    function applyI18n() {
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+        document.getElementById('authLangSelect').value = currentLang;
+        document.getElementById('langSelect').value = currentLang;
+    }
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('parentLang', lang);
+        applyI18n();
+        populateRGrades(); populatePGrades();
+    }
+
+    function applySchoolName() {
+        document.getElementById('headerSchoolName').textContent = SCHOOL_NAME;
+        document.getElementById('authGateSchoolName').textContent = SCHOOL_NAME;
+        document.getElementById('footerSchoolName').textContent = SCHOOL_NAME;
+    }
+
+    function toggleTheme() {
+        isDarkMode = !isDarkMode;
+        const html = document.documentElement;
+        const lightLabel = currentLang === 'am' ? 'ነጭ ጀርባ' : 'White BG';
+        const darkLabel = currentLang === 'am' ? 'ጥቁር ጀርባ' : 'Black BG';
+        if (isDarkMode) {
+            html.classList.add('dark');
+            document.getElementById('themeIcon').className = 'fa-solid fa-sun text-amber-400 mr-1';
+            document.getElementById('themeText').innerText = lightLabel;
+            document.getElementById('authThemeIcon').className = 'fa-solid fa-sun text-amber-500';
+            document.getElementById('authThemeText').innerText = lightLabel;
+        } else {
+            html.classList.remove('dark');
+            document.getElementById('themeIcon').className = 'fa-solid fa-moon text-amber-300 mr-1';
+            document.getElementById('themeText').innerText = darkLabel;
+            document.getElementById('authThemeIcon').className = 'fa-solid fa-moon text-amber-500';
+            document.getElementById('authThemeText').innerText = darkLabel;
+        }
+    }
+
+    function switchAuthTab(tab) {
+        const loginForm = document.getElementById('authLoginForm');
+        const signupForm = document.getElementById('authSignupForm');
+        const loginBtn = document.getElementById('authTabLoginBtn');
+        const signupBtn = document.getElementById('authTabSignupBtn');
+        const active = 'flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-teal-600 text-white';
+        const inactive = 'flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-transparent text-slate-600 dark:text-slate-300';
+        if (tab === 'signup') {
+            loginForm.classList.add('hidden'); signupForm.classList.remove('hidden');
+            signupBtn.className = active; loginBtn.className = inactive;
+        } else {
+            signupForm.classList.add('hidden'); loginForm.classList.remove('hidden');
+            loginBtn.className = active; signupBtn.className = inactive;
+        }
+    }
+
+    function showAuthError(elId, msg) { const el = document.getElementById(elId); el.textContent = msg; el.classList.remove('hidden'); }
+
+    // ================= LOGIN LOCKOUT (client-side, mirrors host.html) =================
+    const LOGIN_MAX_ATTEMPTS = 2, LOGIN_LOCKOUT_MS = 60 * 1000;
+    function getLoginLockState() { return { attempts: parseInt(sessionStorage.getItem('parentLoginAttempts') || '0', 10), lockedUntil: parseInt(sessionStorage.getItem('parentLoginLockedUntil') || '0', 10) }; }
+    function loginRemainingLockMs() { return Math.max(0, getLoginLockState().lockedUntil - Date.now()); }
+    let loginLockTimer = null;
+    function updateLoginLockUI() {
+        const remaining = loginRemainingLockMs();
+        const btn = document.getElementById('loginBtn');
+        if (remaining <= 0) { if (loginLockTimer) { clearInterval(loginLockTimer); loginLockTimer = null; } if (btn) btn.disabled = false; return; }
+        if (btn) btn.disabled = true;
+        showAuthError('loginError', currentLang === 'am' ? `ብዙ ጊዜ የተሳሳተ ፓስወርድ ተሞክሯል። እባክዎ ${Math.ceil(remaining/1000)} ሰከንድ ይጠብቁ።` : `Too many attempts. Please wait ${Math.ceil(remaining/1000)}s.`);
+        if (!loginLockTimer) loginLockTimer = setInterval(updateLoginLockUI, 1000);
+    }
+
+    async function attemptParentSignup() {
+        const email = document.getElementById('signupEmail').value.trim();
+        const pw = document.getElementById('signupPassword').value;
+        const pw2 = document.getElementById('signupPasswordConfirm').value;
+        const btn = document.getElementById('signupBtn');
+        document.getElementById('signupError').classList.add('hidden');
+        if (!email || !pw) return showAuthError('signupError', currentLang === 'am' ? 'እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ።' : 'Please enter an email and password.');
+        if (!isValidEmailFormat_(email)) return showAuthError('signupError', currentLang === 'am' ? 'ትክክለኛ ኢሜይል ያስገቡ።' : 'Please enter a valid email.');
+        if (pw !== pw2) return showAuthError('signupError', currentLang === 'am' ? 'ሁለቱ ፓስወርዶች አይመሳሰሉም።' : 'Passwords do not match.');
+        if (!backendConfigured()) return showAuthError('signupError', currentLang === 'am' ? 'ስርዓቱ ከ Server ጋር አልተገናኘም።' : 'The backend is not configured.');
+        btn.disabled = true;
+        try {
+            // Check the Parent namespace first. This prevents the existing
+            // parentSignup handler from resetting an already-registered password.
+            const check = await postToBackend({ action: 'requestSignupCode', email, host: 'parent' });
+            if (check && check.status === 'already_registered') {
+                showAuthError('signupError', currentLang === 'am' ? 'ይህ ኢሜይል በParent Portal ላይ አስቀድሞ ተመዝግቧል። እባክዎ Login ያድርጉ።' : 'This email is already registered on the Parent Portal. Please log in.');
+                return;
+            }
+            if (check && check.status === 'bad_email') {
+                showAuthError('signupError', currentLang === 'am' ? 'ትክክለኛ ኢሜይል ያስገቡ።' : 'Please enter a valid email.');
+                return;
+            }
+            if (check && check.status !== 'sent') {
+                showAuthError('signupError', currentLang === 'am' ? 'የኢሜይል ማረጋገጫ ሂደት አልተሳካም። እንደገና ይሞክሩ።' : 'Email verification could not be started. Please try again.');
+                return;
+            }
+            const data = await postToBackend({ action: 'parentSignup', email, password: pw, host: 'parent' });
+            if (data && data.status === 'created') {
+                alert(currentLang === 'am' ? 'የParent Portal አካውንት ተፈጥሯል! አሁን ይግቡ።' : 'Parent Portal account created! You can now log in.');
+                document.getElementById('loginEmail').value = email;
+                switchAuthTab('login');
+            } else if (data && (data.status === 'email_taken' || data.status === 'already_registered')) showAuthError('signupError', currentLang === 'am' ? 'ይህ ኢሜይል በParent Portal ላይ አስቀድሞ ተመዝግቧል።' : 'This email is already registered on the Parent Portal.');
+            else if (data && data.status === 'bad_email') showAuthError('signupError', currentLang === 'am' ? 'ትክክለኛ ኢሜይል ያስገቡ።' : 'Please enter a valid email.');
+            else if (data && data.status === 'weak_password') showAuthError('signupError', currentLang === 'am' ? 'ፓስወርድ ቢያንስ 4 ፊደል መሆን አለበት።' : 'Password must be at least 4 characters.');
+            else showAuthError('signupError', currentLang === 'am' ? 'አልተሳካም። እንደገና ይሞክሩ።' : 'Failed. Please try again.');
+        } catch (e) { showAuthError('signupError', currentLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.'); }
+        finally { btn.disabled = false; }
+    }
+
+    async function attemptParentLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pw = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('loginBtn');
+        document.getElementById('loginError').classList.add('hidden');
+        if (loginRemainingLockMs() > 0) return updateLoginLockUI();
+        if (!email || !pw) return showAuthError('loginError', currentLang === 'am' ? 'እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ።' : 'Please enter your email and password.');
+        if (!backendConfigured()) return showAuthError('loginError', currentLang === 'am' ? 'ስርዓቱ ከ Server ጋር አልተገናኘም።' : 'The backend is not configured.');
+        btn.disabled = true;
+        try {
+            const data = await postToBackend({ action: 'parentLogin', email, password: pw, host: 'parent' });
+            if (data && data.status === 'ok') {
+                sessionStorage.removeItem('parentLoginAttempts'); sessionStorage.removeItem('parentLoginLockedUntil');
+                parentEmail = email; parentPassword = pw;
+                sessionStorage.setItem('parentEmail', email); sessionStorage.setItem('parentPassword', pw);
+                unlockPortal();
+            } else if (data && data.status === 'no_account') {
+                showAuthError('loginError', currentLang === 'am' ? 'በዚህ ኢሜይል አካውንት የለም። መጀመሪያ "አካውንት ክፈት" ይጫኑ።' : 'No account with this email. Please sign up first.');
+            } else if (data && data.status === 'device_mismatch') {
+                showAuthError('loginError', currentLang === 'am'
+                    ? 'ይህ አካውንት በሌላ መሣሪያ ተመዝግቧል። የመሣሪያ መቀየር እንዲደረግ Admin ያነጋግሩ።'
+                    : 'This account is already bound to another device. Contact the administrator to reset the device binding.');
+            } else if (data && data.status === 'device_required') {
+                showAuthError('loginError', currentLang === 'am'
+                    ? 'የመሣሪያ መለያ አልተላከም። ገጹን አድስና እንደገና ይሞክሩ።'
+                    : 'Device ID was not sent. Refresh the page and try again.');
+            } else if (data && data.status === 'wrong_password') {
+                const attempts = getLoginLockState().attempts + 1;
+                sessionStorage.setItem('parentLoginAttempts', String(attempts));
+                if (attempts >= LOGIN_MAX_ATTEMPTS) {
+                    sessionStorage.setItem('parentLoginLockedUntil', String(Date.now() + LOGIN_LOCKOUT_MS));
+                    sessionStorage.setItem('parentLoginAttempts', '0');
+                    updateLoginLockUI();
+                } else showAuthError('loginError', currentLang === 'am' ? 'ፓስወርድ ተሳስተዋል።' : 'Wrong password.');
+            } else showAuthError('loginError', currentLang === 'am' ? 'መግባት አልተቻለም።' : 'Could not log in.');
+        } catch (e) { showAuthError('loginError', currentLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.'); }
+        finally { if (loginRemainingLockMs() <= 0) btn.disabled = false; }
+    }
+
+    async function deleteParentAccount() {
+        const email = parentEmail || document.getElementById('loginEmail').value.trim();
+        const pw = parentPassword || document.getElementById('loginPassword').value;
+        if (!email || !pw) return;
+        const sure = confirm(currentLang === 'am'
+            ? 'የParent Portal አካውንትዎን በእርግጥ መሰረዝ ይፈልጋሉ? ይህ የHost አካውንትዎን አይነካም።'
+            : 'Delete your Parent Portal account? Your Host account will not be affected.');
+        if (!sure) return;
+        try {
+            const data = await postToBackend({ action: 'deleteAccount', email, password: pw, host: 'parent' });
+            if (data && data.status === 'deleted') {
+                sessionStorage.removeItem('parentEmail');
+                sessionStorage.removeItem('parentPassword');
+                parentEmail = ''; parentPassword = '';
+                alert(currentLang === 'am' ? 'የParent Portal አካውንትዎ ተሰርዟል።' : 'Your Parent Portal account has been deleted.');
+                location.reload();
+            } else if (data && data.status === 'wrong_password') {
+                alert(currentLang === 'am' ? 'ፓስወርዱ ትክክል አይደለም።' : 'Wrong password.');
+            } else {
+                alert(currentLang === 'am' ? 'አካውንቱ ሊሰረዝ አልቻለም።' : 'The account could not be deleted.');
+            }
+        } catch (e) {
+            alert(currentLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+        }
+    }
+
+    function unlockPortal() {
+        document.body.classList.remove('auth-locked');
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('loggedInEmailBadge').textContent = parentEmail;
+        loadMetaFromBackend();
+        loadNotices();
+        switchMode('result');
+    }
+
+    function logoutParent() {
+        parentEmail = ''; parentPassword = '';
+        sessionStorage.removeItem('parentEmail'); sessionStorage.removeItem('parentPassword');
+        document.body.classList.add('auth-locked');
+        document.getElementById('authGate').style.display = 'flex';
+        switchAuthTab('login');
+        document.getElementById('loginPassword').value = '';
+    }
+
+    // ================= META (years / grades / sections) =================
+    async function loadMetaFromBackend() {
+        if (!backendConfigured()) return;
+        try {
+            const data = await getFromBackend('meta');
+            if (data && data.ok) {
+                sharedAcademicYearsList = (data.academicYearsList || []).map(String);
+                sharedSectionRegistry = data.sectionRegistry || null;
+            }
+        } catch (e) { console.warn('meta load failed', e); }
+        finally { populateRYears(); populateRGrades(); populatePYears(); populatePGrades(); }
+    }
+
+    function getAcademicYears() {
+        if (Array.isArray(sharedAcademicYearsList) && sharedAcademicYearsList.length) return sharedAcademicYearsList;
+        const y = new Date().getFullYear() + 8;
+        return [String(y - 1), String(y), String(y + 1)];
+    }
+
+    function populateRYears() {
+        const sel = document.getElementById('rYear'); if (!sel) return;
+        const old = sel.value;
+        sel.innerHTML = `<option value="">-- ${currentLang==='am'?'ይምረጡ':'Select'} --</option>` + getAcademicYears().map(y => `<option value="${y}">${y} ${currentLang==='am'?'ዓ.ም':'A.Y.'}</option>`).join('');
+        if (old) sel.value = old;
+    }
+    function populatePYears() {
+        const sel = document.getElementById('pYear'); if (!sel) return;
+        const old = sel.value;
+        sel.innerHTML = getAcademicYears().map(y => `<option value="${y}">${y} ${currentLang==='am'?'ዓ.ም':'A.Y.'}</option>`).join('');
+        if (old) sel.value = old;
+    }
+
+    function populateRGrades() { populateRStreamsOrSections(); }
+    function populateRStreamsOrSections() {
+        const grade = document.getElementById('rGrade').value;
+        document.getElementById('rStreamContainer').classList.toggle('hidden', !(parseInt(grade) >= 11));
+        populateRSections();
+    }
+    function populateRSections() {
+        const year = document.getElementById('rYear').value, sem = document.getElementById('rSemester').value;
+        const grade = document.getElementById('rGrade').value, stream = document.getElementById('rStream').value;
+        const sel = document.getElementById('rSection'); if (!sel) return;
+        const old = sel.value;
+        sel.innerHTML = `<option value="">-- ${currentLang==='am'?'ይምረጡ':'Select'} --</option>`;
+        let found = new Set();
+        const reg = sharedSectionRegistry || {};
+        const key = `${year}_${sem}_${grade}_${parseInt(grade) >= 11 ? stream : 'none'}`;
+        if (Array.isArray(reg[key])) reg[key].forEach(s => s && found.add(String(s).trim().toUpperCase()));
+        if (!found.size) ['A','B','C','D','E','F'].forEach(s => found.add(s));
+        Array.from(found).sort().forEach(s => sel.innerHTML += `<option value="${s}">${currentLang==='am'?'ሰክሽን':'Section'} ${s}</option>`);
+        if (old && Array.from(sel.options).some(o => o.value === old)) sel.value = old;
+    }
+
+    function populatePGrades() { populatePStreamsOrSections(); }
+    function populatePStreamsOrSections() {
+        const grade = document.getElementById('pGrade').value;
+        document.getElementById('pStreamContainer').classList.toggle('hidden', !(parseInt(grade) >= 11));
+        populatePSections();
+    }
+    function populatePSections() {
+        const year = document.getElementById('pYear').value, grade = document.getElementById('pGrade').value, stream = document.getElementById('pStream').value;
+        const sel = document.getElementById('pSection'); if (!sel) return;
+        const old = sel.value;
+        sel.innerHTML = '';
+        let found = new Set();
+        const reg = sharedSectionRegistry || {};
+        ['sem1','sem2'].forEach(sem => {
+            const key = `${year}_${sem}_${grade}_${parseInt(grade) >= 11 ? stream : 'none'}`;
+            if (Array.isArray(reg[key])) reg[key].forEach(s => s && found.add(String(s).trim().toUpperCase()));
+        });
+        if (!found.size) ['A','B','C','D','E','F'].forEach(s => found.add(s));
+        Array.from(found).sort().forEach(s => sel.innerHTML += `<option value="${s}">${currentLang==='am'?'ሰክሽን':'Section'} ${s}</option>`);
+        if (old && Array.from(sel.options).some(o => o.value === old)) sel.value = old;
+    }
+
+    // ================= TABS =================
+    function switchMode(mode) {
+        ['result','payment','history'].forEach(m => {
+            document.getElementById(m + 'Pane').classList.toggle('hidden', m !== mode);
+            document.getElementById(m + 'Pane').classList.toggle('flex', m === mode);
+            document.getElementById('tab' + m.charAt(0).toUpperCase() + m.slice(1) + 'Btn').classList.toggle('active', m === mode);
+        });
+        if (mode === 'payment') loadPaymentSettings();
+        if (mode === 'history') loadMyPayments();
+    }
+
+    function accountStatusMessage(status) {
+        const am = currentLang === 'am';
+        if (status === 'no_account') return am ? 'አካውንትዎ አልተገኘም። እባክዎ እንደገና ይግቡ።' : 'Account not found. Please log in again.';
+        if (status === 'wrong_password') return am ? 'የመግቢያ መረጃዎ ትክክል አይደለም። እባክዎ እንደገና ይግቡ።' : 'Your credentials are invalid. Please log in again.';
+        return null;
+    }
+
+    // ================= RESULT LOOKUP =================
+    async function searchChildResult() {
+        const year = document.getElementById('rYear').value, semester = document.getElementById('rSemester').value;
+        const grade = document.getElementById('rGrade').value, stream = document.getElementById('rStream').value;
+        const section = document.getElementById('rSection').value, code = document.getElementById('rCode').value.trim();
+        const name = document.getElementById('rName').value.trim();
+        if (!year || !semester || !grade || !section) return alert(currentLang==='am'?'እባክዎ የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል እና ሰክሽን ይምረጡ!':'Please select year, semester, grade and section!');
+        if (parseInt(grade) >= 11 && !stream) return alert(currentLang==='am'?'እባክዎ የትምህርት ዘርፍ ይምረጡ!':'Please select the stream!');
+        if (!code || !name) return alert(currentLang==='am'?'እባክዎ ኮድ እና ሙሉ ስም ያስገቡ!':'Please enter the code and full name!');
+        if (!parentEmail || !parentPassword) { logoutParent(); return; }
+
+        const btn = document.getElementById('rSearchBtn');
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span> ${currentLang==='am'?'በመፈለግ ላይ...':'Searching...'}</span>`;
+        let data;
+        try {
+            data = await postToBackend({ action: 'parentLookupResult', email: parentEmail, password: parentPassword, year, semester, grade, stream: parseInt(grade)>=11?stream:'', section, code, name, host: 'parent' });
+        } catch (e) { alert(currentLang==='am'?'ከ Server ጋር መገናኘት አልተቻለም።':'Could not reach the server.'); btn.disabled=false; btn.innerHTML=oldHtml; return; }
+        btn.disabled = false; btn.innerHTML = oldHtml;
+
+        if (!data || !data.ok) return alert(currentLang==='am'?'ጥያቄው አልተሳካም።':'The request failed.');
+        const accMsg = accountStatusMessage(data.status);
+        if (accMsg) return alert(accMsg);
+        if (data.status === 'not_found' || data.status === 'blocked') return alert(currentLang==='am'?'ኮድና ስም አልተገኘም፣ ወይም ተማሪው ታግዷል!':'Code and name not found, or the student has been blocked!');
+        if (data.status === 'location_mismatch') {
+            const places = (data.locations||[]).map(l => {
+                const semText = l.semester==='sem1' ? (currentLang==='am'?'1ኛ ሴሚስተር':'1st Semester') : (currentLang==='am'?'2ኛ ሴሚስተር':'2nd Semester');
+                return `${l.year} / ${semText} / Grade ${l.grade}${l.stream?` (${l.stream})`:''} / Section ${l.section}`;
+            }).join('\n');
+            return alert((currentLang==='am'?'ኮድና ስም ትክክል ነው፣ ግን ከመረጡት ቦታ ጋር አይመሳሰልም።\n\nየተመዘገበበት ቦታ:\n':'Code and name are correct but do not match the location selected.\n\nRegistered at:\n') + places);
+        }
+        renderResultCard(data.student, { semester });
+    }
+
+    function renderResultCard(student, ctx) {
+        document.getElementById('resStudentName').textContent = student.name;
+        document.getElementById('resStudentCode').textContent = student.code;
+        document.getElementById('resStudentClass').textContent = `${student.grade}${student.stream?(' '+student.stream):''} ${student.section}`;
+        document.getElementById('resStudentSemester').textContent = ctx.semester === 'sem1' ? (currentLang==='am'?'1ኛ ሴሚስተር':'1st Semester') : (currentLang==='am'?'2ኛ ሴሚስተር':'2nd Semester');
+
+        const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+        const scores = Array.isArray(student.scores) ? student.scores : [];
+        const tbody = document.getElementById('resSubjectsTbody');
+        tbody.innerHTML = subjects.map((subj, i) => `
+            <tr><td class="p-3">${i+1}</td><td class="p-3 font-semibold">${escapeHtml(subj)}</td><td class="p-3 text-center font-bold">${scores[i] !== undefined ? scores[i] : '-'}</td></tr>
+        `).join('') || `<tr><td colspan="3" class="p-4 text-center text-slate-400">${currentLang==='am'?'ውጤት አልተገኘም።':'No scores found.'}</td></tr>`;
+
+        const nums = scores.map(s => parseFloat(s)).filter(n => Number.isFinite(n));
+        const total = nums.reduce((a,b)=>a+b, 0);
+        const avg = nums.length ? (total / nums.length) : 0;
+        document.getElementById('resTotalScore').textContent = total;
+        document.getElementById('resAvgScore').textContent = avg.toFixed(1) + '%';
+        const statusEl = document.getElementById('resStatus');
+        if (avg >= 50) { statusEl.textContent = currentLang==='am'?'አልፏል':'PASS'; statusEl.className = 'text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400'; }
+        else { statusEl.textContent = currentLang==='am'?'ወድቋል':'FAIL'; statusEl.className = 'text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400'; }
+
+        document.getElementById('resultSearchCard').classList.add('hidden');
+        document.getElementById('resultCard').classList.remove('hidden');
+    }
+
+    function resetResultSearch() {
+        document.getElementById('resultCard').classList.add('hidden');
+        document.getElementById('resultSearchCard').classList.remove('hidden');
+        document.getElementById('rCode').value = ''; document.getElementById('rName').value = '';
+    }
+
+    function escapeHtml(v) { return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+    // ================= PAYMENTS =================
+    let cachedPaymentSettings = null;
+
+    async function loadPaymentSettings() {
+        try {
+            const data = await getFromBackend('paymentSettings');
+            if (data && data.ok) {
+                cachedPaymentSettings = data.settings || {};
+                // Keep the cart calculator and the visible settings synchronized.
+                paymentConfigCache = cachedPaymentSettings;
+                renderPaymentSettings();
+                renderSelectedPaymentChildren();
+            }
+        } catch (e) { console.warn('could not load payment settings', e); }
+    }
+
+    function renderPaymentSettings() {
+        const s = cachedPaymentSettings || { requiredAmount: 0, bankAccounts: [] };
+        paymentConfigCache = s;
+        document.getElementById('requiredAmountBox').innerHTML = `<i class="fa-solid fa-sack-dollar text-emerald-600 mr-1"></i> ${currentLang==='am'?'የሚከፈል መጠን':'Amount due'}: <span class="text-emerald-700 dark:text-emerald-400 font-black">${s.requiredAmount || 0} ${currentLang==='am'?'ብር':'Birr'}</span>`;
+        document.getElementById('pAmount').value = s.requiredAmount || '';
+        const bankList = document.getElementById('bankAccountsList');
+        bankList.innerHTML = (s.bankAccounts||[]).map(b => `
+            <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 text-xs">
+                <div class="font-black text-slate-800 dark:text-slate-100">${escapeHtml(b.bankName)}</div>
+                <div class="text-slate-500 dark:text-slate-400">${currentLang==='am'?'ቁ.ቁ':'Acct #'}: <span class="font-mono font-bold">${escapeHtml(b.accountNumber)}</span></div>
+                <div class="text-slate-500 dark:text-slate-400">${currentLang==='am'?'ስም':'Holder'}: ${escapeHtml(b.accountHolder)}</div>
+            </div>
+        `).join('') || `<p class="text-xs text-slate-400 col-span-2">${currentLang==='am'?'የባንክ አካውንት እስካሁን አልተመዘገበም።':'No bank accounts registered yet.'}</p>`;
+
+        const pBank = document.getElementById('pBank');
+        pBank.innerHTML = `<option value="">-- ${currentLang==='am'?'ባንክ ይምረጡ':'Select bank'} --</option>` +
+            (s.bankAccounts||[]).map(b => `<option value="${b.id}">${escapeHtml(b.bankName)} - ${escapeHtml(b.accountNumber)}</option>`).join('');
+    }
+
+    document.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'pPhoto') {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            capturedReceiptFile = null;
+            const preview = document.getElementById('pPhotoPreview');
+            const name = document.getElementById('pPhotoName');
+            if (name) name.textContent = file.name || (currentLang==='am'?'የደረሰኝ ፎቶ':'Receipt photo');
+            const reader = new FileReader();
+            reader.onload = ev => { preview.src = ev.target.result; preview.classList.remove('hidden'); };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    async function openReceiptCamera() {
+        const modal = document.getElementById('receiptCameraModal');
+        const video = document.getElementById('receiptCameraVideo');
+        const msg = document.getElementById('receiptCameraMessage');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (msg) msg.textContent = currentLang==='am' ? 'ይህ ብራውዘር የቀጥታ ካሜራ አይደግፍም። HTTPS ላይ ይክፈቱ ወይም “ከፋይል ምረጥ” ይጠቀሙ።' : 'Live camera is unavailable. Open the site over HTTPS or choose a file.';
+            if (modal) modal.classList.remove('hidden');
+            return;
+        }
+        if (modal) modal.classList.remove('hidden');
+        if (msg) msg.textContent = currentLang==='am' ? 'ካሜራውን ለማብራት ፈቃድ ይስጡ።' : 'Allow camera access when prompted.';
+        try {
+            receiptCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+            video.srcObject = receiptCameraStream;
+            await video.play();
+            if (msg) msg.textContent = '';
+        } catch (err) {
+            if (msg) msg.textContent = currentLang==='am' ? 'ካሜራውን መክፈት አልተቻለም። የብራውዘር ፈቃድ ይፍቀዱ እና ገጹ HTTPS ላይ መሆኑን ያረጋግጡ።' : 'Could not open camera. Allow browser permission and make sure this page uses HTTPS.';
+        }
+    }
+
+    function closeReceiptCamera() {
+        if (receiptCameraStream) { receiptCameraStream.getTracks().forEach(track => track.stop()); receiptCameraStream = null; }
+        const video = document.getElementById('receiptCameraVideo');
+        if (video) video.srcObject = null;
+        const modal = document.getElementById('receiptCameraModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function captureReceiptPhoto() {
+        const video = document.getElementById('receiptCameraVideo');
+        const canvas = document.getElementById('receiptCameraCanvas');
+        const msg = document.getElementById('receiptCameraMessage');
+        if (!video || !video.videoWidth || !canvas) {
+            if (msg) msg.textContent = currentLang==='am' ? 'ካሜራው ገና አልተዘጋጀም። እባክዎ ትንሽ ይጠብቁ።' : 'Camera is not ready yet. Please wait.';
+            return;
+        }
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+            if (!blob) { if (msg) msg.textContent = currentLang==='am' ? 'ፎቶውን ማዘጋጀት አልተቻለም።' : 'Could not create the photo.'; return; }
+            capturedReceiptFile = new File([blob], 'receipt-camera.jpg', { type: 'image/jpeg' });
+            const fileInput = document.getElementById('pPhoto'); if (fileInput) fileInput.value = '';
+            const preview = document.getElementById('pPhotoPreview');
+            if (preview) { preview.src = canvas.toDataURL('image/jpeg', 0.92); preview.classList.remove('hidden'); }
+            const name = document.getElementById('pPhotoName'); if (name) name.textContent = currentLang==='am' ? 'የካሜራ ፎቶ ተዘጋጅቷል' : 'Camera photo captured';
+            closeReceiptCamera();
+        }, 'image/jpeg', 0.92);
+    }
+
+    function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => { const result = reader.result; const base64 = result.split(',')[1]; resolve({ base64, mime: file.type || 'image/jpeg' }); };
+            reader.onerror = () => reject(new Error('read_failed'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function getChildFieldsFor(prefix) {
+        const grade = document.getElementById(prefix+'Grade').value;
+        return {
+            ecYear: document.getElementById(prefix+'Year').value,
+            grade, stream: parseInt(grade) >= 11 ? document.getElementById(prefix+'Stream').value : '',
+            section: document.getElementById(prefix+'Section').value,
+            code: document.getElementById(prefix+'Code').value.trim(),
+            name: document.getElementById(prefix+'Name').value.trim()
+        };
+    }
+
+    function showPaymentMsg(text, kind) {
+        const el = document.getElementById('paymentStatusMsg');
+        el.textContent = text;
+        el.className = 'text-xs font-bold text-center whitespace-pre-line p-2 rounded-xl ' + (kind === 'error' ? 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : kind === 'ok' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300');
+        el.classList.remove('hidden');
+    }
+
+    function paymentStatusText(status) {
+        const am = currentLang === 'am';
+        const map = {
+            no_account: am ? 'አካውንትዎ አልተገኘም። እባክዎ እንደገና ይግቡ።' : 'Account not found. Please log in again.',
+            wrong_password: am ? 'የመግቢያ መረጃዎ ትክክል አይደለም።' : 'Invalid credentials.',
+            bad_request: am ? 'እባክዎ ሁሉንም መስኮች ይሙሉ።' : 'Please fill in all fields.',
+            bad_bank: am ? 'የተመረጠው ባንክ አልተገኘም።' : 'Selected bank not found.',
+            already_pending: am ? 'ለዚህ ልጅ ቀድሞ የተላከ ክፍያ በመጠባበቅ ላይ ነው።' : 'A payment for this child is already pending review.',
+            already_approved: am ? 'የዚህ ተማሪ የዓመቱ ክፍያ ሙሉ በሙሉ ተከፍሏል። ድጋሚ መክፈል አይቻልም።' : 'This student is fully paid for this academic year. Duplicate payment is blocked.',
+            one_student_at_a_time: am ? 'በአንድ ጊዜ የአንድ ተማሪ ክፍያ ብቻ ይላኩ።' : 'Submit payment for one student at a time.',
+            amount_exceeds_balance: am ? 'ያስገቡት መጠን ከቀረው ክፍያ በላይ ነው። የቀረውን መጠን ብቻ ያስገቡ።' : 'The entered amount exceeds the remaining balance. Enter the remaining amount only.',
+            receipt_required: am ? 'የክፍያ ደረሰኝ ፎቶ ያያይዙ።' : 'Attach a payment receipt photo.',
+            submitted: am ? 'ደረሰኝዎ ተልኳል! አድሚን እስኪያረጋግጥ ይጠብቁ።' : 'Your receipt was submitted! Please wait for admin review.',
+            none: am ? 'ለዚህ ልጅ የተላከ ክፍያ የለም።' : 'No payment submitted for this child yet.'
+        };
+        return map[status] || (am ? 'ያልታወቀ ስህተት ተከስቷል።' : 'An unknown error occurred.');
+    }
+
+    function paymentAmountPerChild() {
+        const raw = paymentConfigCache && (paymentConfigCache.requiredAmount ?? paymentConfigCache.amount);
+        const n = Number(raw);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+    }
+
+    function renderSelectedPaymentChildren() {
+        const list = document.getElementById('selectedPaymentChildrenList');
+        const summary = document.getElementById('paymentCartSummary');
+        const totalEl = document.getElementById('paymentCartTotal');
+        if (!list || !summary || !totalEl) return;
+        if (!selectedPaymentChildren.length) {
+            list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">${currentLang==='am'?'እስካሁን ልጅ አልተመረጠም።':'No student added yet.'}</p>`;
+            summary.classList.add('hidden');
+            const amountInput = document.getElementById('pAmount');
+            if (amountInput) amountInput.value = '';
+            return;
+        }
+        const perChild = paymentAmountPerChild();
+        list.innerHTML = selectedPaymentChildren.map((c, i) => `
+            <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <div class="min-w-0">
+                    <div class="font-black text-xs text-slate-800 dark:text-slate-100 truncate">${escapeHtml(c.name)}</div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">${escapeHtml(c.code)} · Grade ${escapeHtml(c.grade)}${c.stream?(' '+escapeHtml(c.stream)):''} · ${escapeHtml(c.section)} · ${escapeHtml(c.ecYear)} E.C.</div>
+                </div>
+                <div class="shrink-0 text-right"><span class="font-black text-xs text-teal-700 dark:text-teal-400">${currentLang==='am'?'የዓመት ክፍያ':'Annual fee'}: ${perChild.toFixed(2)} Birr</span></div>
+            </div>`).join('');
+        summary.classList.remove('hidden');
+        const total = perChild;
+        totalEl.textContent = `${total.toFixed(2)} Birr`;
+        const amountInput = document.getElementById('pAmount');
+        if (amountInput && !amountInput.value && total > 0) amountInput.value = total.toFixed(2);
+    }
+
+    function removePaymentChild(index) {
+        selectedPaymentChildren.splice(index, 1);
+        renderSelectedPaymentChildren();
+    }
+
+    function focusPaymentChildForm() {
+        const el = document.getElementById('pCode');
+        if (el) { el.focus(); el.scrollIntoView({behavior:'smooth', block:'center'}); }
+    }
+
+    async function verifyAndAddPaymentChild() {
+        if (!parentEmail || !parentPassword) { logoutParent(); return; }
+        const f = getChildFieldsFor('p');
+        if (!f.ecYear || !f.grade || !f.section || !/^\d{6}$/.test(f.code) || !f.name) {
+            return showPaymentMsg(currentLang==='am'?'እባክዎ የትምህርት ዘመን፣ ክፍል፣ ሰክሽን፣ 6-ዲጂት ኮድ እና ሙሉ ስም ያስገቡ።':'Enter academic year, grade, section, a 6-digit code and full name.', 'error');
+        }
+        if (selectedPaymentChildren.length && !selectedPaymentChildren.some(c => c.code === f.code && c.ecYear === f.ecYear)) { return showPaymentMsg(currentLang==='am'?'በአንድ ጊዜ የአንድ ተማሪ ክፍያ ብቻ ይላኩ። የመጀመሪያውን ክፍያ ከጨረሱ በኋላ ሌላውን ይምረጡ።':'Submit one student payment at a time. Finish this payment before selecting another student.', 'error'); }
+        if (selectedPaymentChildren.some(c => c.code === f.code && c.ecYear === f.ecYear)) {
+            return showPaymentMsg(currentLang==='am'?'ይህ ተማሪ ቀድሞ ተጨምሯል።':'This student is already added.', 'error');
+        }
+        const btn = document.getElementById('addPaymentChildBtn');
+        const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${currentLang==='am'?'በማረጋገጥ ላይ...':'Verifying...'}</span>`;
+        try {
+            // Re-use the existing protected result lookup endpoint only to verify identity/location.
+            // The server remains authoritative; no payment is created by this call.
+            let data = await postToBackend({action:'parentVerifyPaymentStudent', email:parentEmail, password:parentPassword, ecYear:f.ecYear, grade:f.grade, stream:f.stream, section:f.section, code:f.code, name:f.name, host:'parent'});
+            if (!data || !data.ok || data.status !== 'found') {
+                return showPaymentMsg(currentLang==='am'?'ተማሪው በዚህ የትምህርት ዘመን/ክፍል/ሰክሽን ላይ አልተረጋገጠም።':'The student could not be verified for this academic year/class/section.', 'error');
+            }
+            selectedPaymentChildren = [f];
+            renderSelectedPaymentChildren();
+            showPaymentMsg(currentLang==='am'?'ተማሪው በትክክል ተጨምሯል።':'Student verified and added.', 'ok');
+        } catch(e) {
+            showPaymentMsg(currentLang==='am'?'ከ Server ጋር መገናኘት አልተቻለም።':'Could not reach the server.', 'error');
+        } finally { btn.disabled=false; btn.innerHTML=old; }
+    }
+
+    async function checkPaymentStatus() {
+        if (!parentEmail || !parentPassword) { logoutParent(); return; }
+        const f = getChildFieldsFor('p');
+        if (!f.ecYear || !f.grade || !f.section || !f.code || !f.name) return showPaymentMsg(paymentStatusText('bad_request'), 'error');
+        try {
+            const data = await postToBackend(Object.assign({ action: 'parentCheckPaymentStatus', email: parentEmail, password: parentPassword, host: 'parent' }, f));
+            if (!data || !data.ok) return showPaymentMsg(paymentStatusText(data && data.status), 'error');
+            if (data.status === 'none') return showPaymentMsg(paymentStatusText('none'), 'pending');
+            if (data.status === 'found') {
+                const p = data.payment;
+                const label = p.status === 'approved' ? (currentLang==='am'?'ጸድቋል':'Approved') : p.status === 'rejected' ? (currentLang==='am'?'ተቀባይነት አላገኘም':'Rejected') : (currentLang==='am'?'በመጠባበቅ ላይ':'Pending');
+                showPaymentMsg(`${currentLang==='am'?'ሁኔታ':'Status'}: ${label} — ${p.amount} ${currentLang==='am'?'ብር':'Birr'} (${escapeHtml(p.bankName)})` + (p.adminNote ? `\n${currentLang==='am'?'ማስታወሻ':'Note'}: ${p.adminNote}` : ''), p.status === 'approved' ? 'ok' : p.status === 'rejected' ? 'error' : 'pending');
+            } else showPaymentMsg(paymentStatusText(data.status), 'error');
+        } catch (e) { showPaymentMsg(currentLang==='am'?'ከ Server ጋር መገናኘት አልተቻለም።':'Could not reach the server.', 'error'); }
+    }
+
+    async function submitPayment() {
+        if (!parentEmail || !parentPassword) { logoutParent(); return; }
+        const bankId = document.getElementById('pBank').value;
+        const amount = document.getElementById('pAmount').value;
+        const expectedTotal = paymentAmountPerChild();
+        const photoInput = document.getElementById('pPhoto');
+        const file = capturedReceiptFile || (photoInput.files && photoInput.files[0]);
+        if (selectedPaymentChildren.length !== 1) return showPaymentMsg(currentLang==='am'?'እባክዎ ቢያንስ አንድ ተማሪ ያረጋግጡ እና ይጨምሩ።':'Verify and add at least one student.', 'error');
+        if (!bankId) return showPaymentMsg(currentLang==='am'?'እባክዎ ባንክ ይምረጡ።':'Please select a bank.', 'error');
+        if (!amount || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || expectedTotal <= 0) { return showPaymentMsg(currentLang==='am'?'የከፈሉትን ትክክለኛ መጠን ያስገቡ።':'Enter a valid payment amount.', 'error'); }
+        if (!file) return showPaymentMsg(currentLang==='am'?'እባክዎ የደረሰኝ ፎቶ ያያይዙ።':'Please attach a receipt photo.', 'error');
+
+        const btn = document.getElementById('pSubmitBtn');
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span> ${currentLang==='am'?'በመላክ ላይ...':'Submitting...'}</span>`;
+        try {
+            const { base64, mime } = await readFileAsBase64(file);
+            const data = await postToBackend({
+                action: 'parentSubmitPayment', email: parentEmail, password: parentPassword, host: 'parent',
+                bankId, amount, children: selectedPaymentChildren, photoBase64: base64, photoMime: mime
+            });
+            if (data && data.ok && data.status === 'submitted') {
+                showPaymentMsg(currentLang==='am' ? `ደረሰኙ ተልኳል። የተከፈለው: ${Number(data.totalAmount).toFixed(2)} ብር` : `Receipt submitted. Amount: ${Number(data.totalAmount).toFixed(2)} Birr.`, 'ok');
+                selectedPaymentChildren = []; renderSelectedPaymentChildren();
+                photoInput.value = ''; capturedReceiptFile = null; closeReceiptCamera(); document.getElementById('pPhotoPreview').classList.add('hidden'); const nameEl=document.getElementById('pPhotoName'); if(nameEl) nameEl.textContent='';
+            } else if (data && data.status === 'amount_exceeds_balance' && Number(data.remainingAmount) > 0) { document.getElementById('pAmount').value = Number(data.remainingAmount).toFixed(2); showPaymentMsg((currentLang==='am'?'የቀረው ክፍያ ':'Remaining balance: ') + Number(data.remainingAmount).toFixed(2) + (currentLang==='am'?' ብር ነው። መጠኑን አስተካክለው እንደገና ይላኩ።':' Birr. The amount has been adjusted; submit again.'), 'error'); } else showPaymentMsg(paymentStatusText(data && data.status), 'error');
+        } catch (e) { showPaymentMsg(currentLang==='am'?'ከ Server ጋር መገናኘት አልተቻለም።':'Could not reach the server.', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = oldHtml; }
+    }
+
+    async function loadMyPayments() {
+        if (!parentEmail || !parentPassword) return;
+        const list = document.getElementById('paymentsHistoryList');
+        const empty = document.getElementById('paymentsHistoryEmpty');
+        list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i></p>`;
+        try {
+            const data = await postToBackend({ action: 'parentListMyPayments', email: parentEmail, password: parentPassword, host: 'parent' });
+            if (!data || !data.ok) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            const payments = data.payments || [];
+            if (!payments.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            list.innerHTML = payments.map(p => {
+                const pillClass = p.status === 'approved' ? 'status-approved' : p.status === 'rejected' ? 'status-rejected' : 'status-pending';
+                const label = p.status === 'approved' ? (currentLang==='am'?'ጸድቋል':'Approved') : p.status === 'rejected' ? (currentLang==='am'?'ተቀባይነት አላገኘም':'Rejected') : (currentLang==='am'?'በመጠባበቅ ላይ':'Pending');
+                const date = p.submittedAt ? new Date(p.submittedAt).toLocaleString() : '-';
+                return `
+                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <div class="font-black text-slate-800 dark:text-slate-100">${escapeHtml(p.name)} <span class="text-slate-400 font-normal">(${escapeHtml(p.code)})</span></div>
+                            <div class="text-slate-500 dark:text-slate-400">${escapeHtml(p.ecYear)} — Grade ${escapeHtml(p.grade)}${p.stream?(' '+escapeHtml(p.stream)):''} ${escapeHtml(p.section)}</div>
+                        </div>
+                        <span class="status-pill ${pillClass}">${label}</span>
+                    </div>
+                    <div class="text-slate-600 dark:text-slate-300">${escapeHtml(p.bankName)} · <span class="font-bold">${p.amount} ${currentLang==='am'?'ብር':'Birr'}</span></div>
+                    <div class="text-slate-400">${date}</div>
+                    ${p.adminNote ? `<div class="text-rose-600 dark:text-rose-400 font-semibold"><i class="fa-solid fa-note-sticky mr-1"></i>${escapeHtml(p.adminNote)}</div>` : ''}
+                </div>`;
+            }).join('');
+        } catch (e) { list.innerHTML = ''; empty.classList.remove('hidden'); }
+    }
+
+    // ================= NOTICES =================
+    let cachedNotices = [];
+    async function loadNotices() {
+        if (!parentEmail || !parentPassword) return;
+        try {
+            const academicYears = [...new Set((Array.isArray(selectedPaymentChildren) ? selectedPaymentChildren : []).map(c => String(c && c.ecYear || '').trim()).filter(Boolean))];
+            const data = await postToBackend({ action: 'parentGetNotices', email: parentEmail, password: parentPassword, host: 'parent', academicYears });
+            if (data && data.ok) {
+                cachedNotices = data.notices || [];
+                const dot = document.getElementById('noticeBellDot');
+                if (data.unreadCount > 0) { dot.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount; dot.classList.remove('hidden'); }
+                else dot.classList.add('hidden');
+                renderNotices();
+            }
+        } catch (e) { console.warn('notices load failed', e); }
+    }
+
+    function renderNotices() {
+        const list = document.getElementById('noticesList');
+        if (!cachedNotices.length) { list.innerHTML = `<p class="text-slate-400 text-center py-4">${currentLang==='am'?'ምንም ማስታወቂያ የለም።':'No notices.'}</p>`; return; }
+        list.innerHTML = cachedNotices.map(n => `
+            <div class="p-2.5 rounded-xl border ${n.read ? 'border-slate-200 dark:border-slate-800 opacity-70' : 'border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/40'}">
+                <div class="font-black text-slate-800 dark:text-slate-100">${escapeHtml(n.title)}</div>
+                <div class="text-slate-600 dark:text-slate-300 mt-0.5">${escapeHtml(n.message)}</div>
+                <div class="text-[10px] text-slate-400 mt-1">${escapeHtml(n.academicYear ? (n.academicYear + ' · ') : '')}${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
+            </div>
+        `).join('');
+    }
+
+    function toggleNoticesPanel() {
+        const panel = document.getElementById('noticesPanel');
+        const willOpen = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        if (willOpen && cachedNotices.some(n => !n.read)) {
+            const ids = cachedNotices.filter(n => !n.read && n.id).map(n => n.id);
+            if (ids.length) {
+                postToBackend({ action: 'parentMarkNoticesRead', email: parentEmail, password: parentPassword, host: 'parent', noticeIds: ids })
+                    .then(() => loadNotices())
+                    .catch(() => {});
+            }
+        }
+    }
+
+    // ================= INIT =================
+    (function init() {
+        applySchoolName();
+        applyI18n();
+        switchAuthTab('login');
+        if (parentEmail && parentPassword) { unlockPortal(); } else { document.body.classList.add('auth-locked'); }
+        document.documentElement.style.visibility = 'visible';
+    })();
+    document.addEventListener('DOMContentLoaded', () => { renderSelectedPaymentChildren(); });
+</script>
+</body>
+</html>

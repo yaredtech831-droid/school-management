@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="am" id="htmlTag">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>የክፍያ አድሚን ፖርታል</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' }</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body{background:#f7f3ee;} html.dark body{background:#151109;}
+    button,select,input{transition:transform .15s,box-shadow .15s;}
+    button:hover{transform:translateY(-1px);} button:active{transform:translateY(1px) scale(.98);}
+    .bank-badge{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#fff;flex-shrink:0;}
+    body.locked > *:not(#loginGate){display:none !important;}
+    .status-pending{background:#fef3c7;color:#92400e;} .status-approved{background:#d1fae5;color:#065f46;} .status-rejected{background:#fee2e2;color:#991b1b;}
+    html.dark .status-pending{background:#78350f;color:#fde68a;} html.dark .status-approved{background:#064e3b;color:#a7f3d0;} html.dark .status-rejected{background:#7f1d1d;color:#fecaca;}
+</style>
+</head>
+<body class="locked bg-amber-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen">
+
+<!-- ============ PAYMENT ADMIN LOGIN GATE ============ -->
+<div id="loginGate" class="fixed inset-0 z-[999] bg-amber-950/95 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-8 w-full max-w-sm space-y-4 border border-amber-200 dark:border-slate-800">
+    <div class="text-center space-y-2">
+      <div class="w-14 h-14 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto"><i class="fa-solid fa-money-check-dollar"></i></div>
+      <h2 class="text-lg font-bold">Finance & Payment Admin</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400">የክፍያ አድሚን ገጽ ነው። እባክዎ በፋይናንስ ኢሜይልዎ እና ፓስወርድዎ ይግቡ።</p>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="gateLoginForm" class="space-y-3">
+      <!-- STEP 1: FINANCE ADMIN EMAIL & OTP -->
+      <div id="loginEmailStep" class="space-y-2">
+        <label class="text-[11px] font-bold text-slate-600 dark:text-slate-400">የፋይናንስ አድሚን ኢሜይል</label>
+        <input type="email" id="adminEmailInput" placeholder="finance@school.com" class="w-full bg-slate-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700">
+        <div class="flex gap-2">
+          <input type="text" id="adminOtpInput" placeholder="6-ዲጂት ኮድ" maxlength="6" class="flex-1 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700">
+          <button onclick="requestPaymentAdminOtp()" id="sendOtpBtn" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-xl shrink-0">ኮድ ላክ</button>
+        </div>
+        <button onclick="verifyPaymentAdminOtp()" id="verifyOtpBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 rounded-xl">ኢሜይል አረጋግጥ</button>
+      </div>
+
+      <!-- STEP 2: FINANCE ADMIN PASSWORD -->
+      <div id="loginPwStep" class="hidden space-y-2">
+        <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> ኢሜይል ተረጋግጧል! አሁን የፋይናንስ አድሚን ፓስወርድ ያስገቡ።</p>
+        <input type="password" id="adminPw" placeholder="Payment Admin Password" class="w-full bg-slate-50 dark:bg-slate-800 px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700" onkeydown="if(event.key==='Enter') doLogin();">
+        <button onclick="doLogin()" id="loginBtn" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl shadow"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+      </div>
+    </div>
+
+    <p id="loginError" class="hidden text-xs font-bold text-rose-600 text-center whitespace-pre-line"></p>
+  </div>
+</div>
+
+<!-- ============ MAIN CONTENT ============ -->
+<header class="bg-amber-900 dark:bg-slate-900 text-white p-4 shadow-md sticky top-0 z-40">
+  <div class="max-w-5xl mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-2 font-bold"><i class="fa-solid fa-money-check-dollar text-amber-300"></i> Finance & Payment Admin Portal</div>
+    <div class="flex items-center gap-2">
+      <button onclick="doLogout()" class="bg-rose-700 hover:bg-rose-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-right-from-bracket"></i> ውጣ</button>
+      <button onclick="toggleTheme()" class="bg-amber-800 hover:bg-amber-700 px-3 py-1.5 rounded-xl border border-amber-700"><i id="themeIcon" class="fa-solid fa-moon text-amber-200"></i></button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
+
+  <!-- FEE AMOUNT -->
+  <section class="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-5 border border-slate-200 dark:border-slate-800">
+    <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-coins text-amber-600"></i> Required Fee Amount</h3>
+    <div class="flex gap-2">
+      <input id="feeAmountInput" type="number" placeholder="e.g. 1500" class="flex-1 bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+      <button onclick="saveFeeAmount()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 rounded-xl text-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+  </section>
+
+  <!-- BANK ACCOUNTS -->
+  <section class="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-5 border border-slate-200 dark:border-slate-800">
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-sm"><i class="fa-solid fa-building-columns text-amber-600"></i> Bank Accounts</h3>
+      <button onclick="toggleAddBank()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs"><i class="fa-solid fa-plus"></i> Add Bank Account</button>
+    </div>
+    <div id="addBankForm" class="hidden bg-slate-50 dark:bg-slate-800 rounded-xl p-4 mb-3 space-y-2">
+      <select id="bankNameSelect" onchange="onBankNameSelectChange()" class="w-full bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select>
+      <input id="bankNameCustom" placeholder="Bank name" class="hidden w-full bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+      <input id="bankAccNumber" placeholder="Account number" class="w-full bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+      <input id="bankAccHolder" placeholder="Account holder name" class="w-full bg-white dark:bg-slate-900 px-3 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+      <div class="flex gap-2">
+        <button onclick="addBankAccount()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm"><i class="fa-solid fa-check"></i> Add</button>
+        <button onclick="toggleAddBank()" class="flex-1 bg-slate-300 dark:bg-slate-700 font-bold py-2 rounded-xl text-sm">Cancel</button>
+      </div>
+    </div>
+    <div id="bankAccountsList" class="space-y-2"></div>
+  </section>
+
+  <!-- PAYMENTS VERIFICATION -->
+  <section class="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-5 border border-slate-200 dark:border-slate-800">
+    <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-list-check text-amber-600"></i> Payment Verification</h3>
+    <div class="flex flex-wrap gap-2 mb-3">
+      <select id="filterGrade" onchange="loadPayments()" class="bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700">
+        <option value="">All Grades</option><option value="9">Grade 9</option><option value="10">Grade 10</option><option value="11">Grade 11</option><option value="12">Grade 12</option>
+      </select>
+      <input id="filterSection" placeholder="Section (e.g. A)" onchange="loadPayments()" class="bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 w-32">
+      <select id="filterStatus" onchange="loadPayments()" class="bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700">
+        <option value="">All Statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+      </select>
+      <button onclick="loadPayments()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-2 rounded-xl text-xs"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border-collapse min-w-[900px]">
+        <thead>
+          <tr class="bg-slate-100 dark:bg-slate-800 font-bold text-left">
+            <th class="p-2">Student</th><th class="p-2">Code</th><th class="p-2">Grade/Sec</th><th class="p-2">Year</th>
+            <th class="p-2">Bank</th><th class="p-2">Amount</th><th class="p-2">Receipt</th><th class="p-2">Status</th><th class="p-2">Action</th>
+          </tr>
+        </thead>
+        <tbody id="paymentsTbody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw_mm4Za-OJsnLOTlz6uCHV06twXD4sV8_Hko0jAVYCh8lWwh04HfteJ7VxSVvycdOE/exec';
+let adminPassword = sessionStorage.getItem('paymentAdminPw') || '';
+let dark = false;
+
+const BANKS = {
+  "Commercial Bank of Ethiopia":{s:"CBE",c:"#5b2a86"}, "Awash Bank":{s:"AWB",c:"#f97316"},
+  "Dashen Bank":{s:"DSH",c:"#1d4ed8"}, "Bank of Abyssinia":{s:"BOA",c:"#7c3aed"},
+  "Wegagen Bank":{s:"WEG",c:"#059669"}, "Nib International Bank":{s:"NIB",c:"#0891b2"},
+  "Cooperative Bank of Oromia":{s:"COOP",c:"#65a30d"}, "United Bank":{s:"UB",c:"#dc2626"},
+  "Zemen Bank":{s:"ZMN",c:"#1e293b"}, "Oromia International Bank":{s:"OIB",c:"#16a34a"},
+  "Berhan Bank":{s:"BRH",c:"#2563eb"}, "Bunna Bank":{s:"BUN",c:"#92400e"},
+  "Abay Bank":{s:"ABY",c:"#0369a1"}, "Addis International Bank":{s:"ADIB",c:"#0d9488"},
+  "Enat Bank":{s:"ENAT",c:"#db2777"}, "Telebirr":{s:"TB",c:"#eab308"}
+};
+
+function bankBadgeHtml(name){
+  const b = BANKS[name] || {s:(name||"?").slice(0,3).toUpperCase(), c:"#475569"};
+  return `<div class="bank-badge" style="background:${b.c}">${b.s}</div>`;
+}
+
+function toggleTheme(){ dark=!dark; document.documentElement.classList.toggle('dark',dark); document.getElementById('themeIcon').className = dark?'fa-solid fa-sun text-amber-300':'fa-solid fa-moon text-amber-200'; }
+
+async function postBackend(payload){
+  const res = await fetch(BACKEND_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  return await res.json();
+}
+
+function showError(msg) {
+  const err = document.getElementById('loginError');
+  err.textContent = msg;
+  err.classList.remove('hidden');
+}
+
+// ================= PAYMENT ADMIN AUTH =================
+async function requestPaymentAdminOtp() {
+  const email = document.getElementById('adminEmailInput').value.trim();
+  if(!email) return showError('እባክዎ የፋይናንስ አድሚን ኢሜይል ያስገቡ።');
+  const btn = document.getElementById('sendOtpBtn');
+  btn.disabled = true; btn.innerText = 'በመላክ ላይ...';
+  try {
+    const data = await postBackend({action: 'requestPaymentAdminCode', email: email});
+    if(data && data.status === 'sent') alert('የማረጋገጫ ኮድ ወደ ኢሜይልዎ ተልኳል!');
+    else showError('ኮድ መላክ አልተቻለም። በትክክል የፋይናንስ አድሚን ኢሜይል መሆኑን ያረጋገጡ።');
+  } catch(e) { showError('ከ Server ጋር መገናኘት አልተቻለም።'); }
+  finally { btn.disabled = false; btn.innerText = 'ኮድ ላክ'; }
+}
+
+async function verifyPaymentAdminOtp() {
+  const email = document.getElementById('adminEmailInput').value.trim();
+  const code = document.getElementById('adminOtpInput').value.trim();
+  if(!email || !code) return showError('እባክዎ ኢሜይል እና የማረጋገጫ ኮድ ያስገቡ።');
+  try {
+    const data = await postBackend({action: 'verifyPaymentAdminCode', email: email, code: code});
+    if(data && data.status === 'verified') {
+      document.getElementById('loginEmailStep').classList.add('hidden');
+      document.getElementById('loginPwStep').classList.remove('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+    } else showError('የተሳሳተ የማረጋገጫ ኮድ።');
+  } catch(e) { showError('ከ Server ጋር መገናኘት አልተቻለም።'); }
+}
+
+async function doLogin(){
+  const pw = document.getElementById('adminPw').value;
+  const email = document.getElementById('adminEmailInput').value.trim();
+  document.getElementById('loginError').classList.add('hidden');
+  if(!pw) return showError('እባክዎ ፓስወርድ ያስገቡ።');
+  
+  const data = await postBackend({action:'verifyPaymentAdminPassword', email: email, password:pw});
+  if(data && data.ok && data.valid){
+    adminPassword = pw; 
+    sessionStorage.setItem('paymentAdminPw', pw);
+    document.body.classList.remove('locked');
+    document.getElementById('loginGate').style.display='none';
+    loadAll();
+  } else if (data && data.locked) {
+    showError(`በተደጋጋሚ የተሳሳተ ፓስወርድ በመሞከሩ ለ 15 ደቂቃ ታግዷል።`);
+  } else {
+    showError('የተሳሳተ የፋይናንስ አድሚን ፓስወርድ።');
+  }
+}
+
+function doLogout() {
+  adminPassword = '';
+  sessionStorage.removeItem('paymentAdminPw');
+  document.body.classList.add('locked');
+  document.getElementById('loginGate').style.display='flex';
+  document.getElementById('loginEmailStep').classList.remove('hidden');
+  document.getElementById('loginPwStep').classList.add('hidden');
+}
+
+function toggleAddBank(){ document.getElementById('addBankForm').classList.toggle('hidden'); }
+
+function populateBankNameSelect(){
+  const sel = document.getElementById('bankNameSelect');
+  sel.innerHTML = Object.keys(BANKS).map(n=>`<option value="${n}">${n}</option>`).join('') + `<option value="__other__">Other (type manually)</option>`;
+  onBankNameSelectChange();
+}
+function onBankNameSelectChange(){
+  const isOther = document.getElementById('bankNameSelect').value === '__other__';
+  document.getElementById('bankNameCustom').classList.toggle('hidden', !isOther);
+}
+
+async function loadAll(){
+  populateBankNameSelect();
+  await loadPaymentSettings();
+  await loadPayments();
+}
+
+let currentSettings = null;
+async function loadPaymentSettings(){
+  const res = await fetch(`${BACKEND_URL}?action=paymentSettings&_=${Date.now()}`, {cache:'no-store'});
+  const data = await res.json();
+  if(!data || !data.ok) return;
+  currentSettings = data.settings;
+  document.getElementById('feeAmountInput').value = currentSettings.requiredAmount || '';
+  renderBankAccounts();
+}
+
+function renderBankAccounts(){
+  const list = document.getElementById('bankAccountsList');
+  const accs = (currentSettings && currentSettings.bankAccounts) || [];
+  list.innerHTML = accs.length ? accs.map(b=>`
+    <div class="flex items-center gap-3 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+      ${bankBadgeHtml(b.bankName)}
+      <div class="flex-1"><b class="text-sm">${b.bankName}</b><br><span class="text-xs text-slate-500">${b.accountNumber} — ${b.accountHolder}</span></div>
+      <button onclick="deleteBankAccount('${b.id}')" class="text-rose-600 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('') : `<p class="text-xs text-slate-400">No bank accounts yet.</p>`;
+}
+
+async function saveFeeAmount(){
+  const amount = document.getElementById('feeAmountInput').value;
+  const data = await postBackend({action:'adminSavePaymentAmount', password:adminPassword, amount});
+  if(data && data.ok){ currentSettings = data.settings; alert('Saved!'); } else alert('Failed to save.');
+}
+
+async function addBankAccount(){
+  const sel = document.getElementById('bankNameSelect').value;
+  const bankName = sel==='__other__' ? document.getElementById('bankNameCustom').value.trim() : sel;
+  const accountNumber = document.getElementById('bankAccNumber').value.trim();
+  const accountHolder = document.getElementById('bankAccHolder').value.trim();
+  if(!bankName || !accountNumber || !accountHolder){ alert('Please fill in every field.'); return; }
+  const data = await postBackend({action:'adminAddBankAccount', password:adminPassword, bankName, accountNumber, accountHolder});
+  if(data && data.ok){
+    currentSettings = data.settings; renderBankAccounts();
+    document.getElementById('bankAccNumber').value=''; document.getElementById('bankAccHolder').value=''; document.getElementById('bankNameCustom').value='';
+    toggleAddBank();
+  } else alert('Failed to add.');
+}
+async function deleteBankAccount(id){
+  if(!confirm('Delete this bank account?')) return;
+  const data = await postBackend({action:'adminDeleteBankAccount', password:adminPassword, id});
+  if(data && data.ok){ currentSettings = data.settings; renderBankAccounts(); }
+}
+
+async function loadPayments(){
+  const grade = document.getElementById('filterGrade').value;
+  const section = document.getElementById('filterSection').value.trim();
+  const status = document.getElementById('filterStatus').value;
+  const data = await postBackend({action:'adminListPayments', password:adminPassword, grade, section, status});
+  const tbody = document.getElementById('paymentsTbody');
+  if(!data || !data.ok || !data.payments || !data.payments.length){
+    tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">No payments found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.payments.map(p=>`
+    <tr class="border-b border-slate-100 dark:border-slate-800">
+      <td class="p-2 font-semibold">${p.name}</td>
+      <td class="p-2 font-mono text-amber-600">${p.code}</td>
+      <td class="p-2">Gr.${p.grade}${p.stream?'('+p.stream+')':''}-${p.section}</td>
+      <td class="p-2">${p.ecYear}</td>
+      <td class="p-2 flex items-center gap-1.5">${bankBadgeHtml(p.bankName)}<span>${p.bankName}</span></td>
+      <td class="p-2 font-bold">${p.amount} ETB</td>
+      <td class="p-2"><a href="${p.photoUrl}" target="_blank" class="text-indigo-600 hover:underline"><i class="fa-solid fa-image"></i> View</a></td>
+      <td class="p-2"><span class="px-2 py-1 rounded-full font-bold status-${p.status}">${p.status}</span></td>
+      <td class="p-2 flex gap-1">
+        ${p.status!=='approved' ? `<button onclick="updatePayment('${p.id}','approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-[11px] font-bold"><i class="fa-solid fa-check"></i></button>`:''}
+        ${p.status!=='rejected' ? `<button onclick="updatePayment('${p.id}','rejected')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-[11px] font-bold"><i class="fa-solid fa-xmark"></i></button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+async function updatePayment(id, status){
+  let note = '';
+  if(status==='rejected') note = prompt('Optional note to the parent (reason for rejection):') || '';
+  const data = await postBackend({action:'adminUpdatePaymentStatus', password:adminPassword, id, status, note});
+  if(data && data.ok) loadPayments(); else alert('Failed to update.');
+}
+
+if(adminPassword){
+  document.body.classList.remove('locked');
+  document.getElementById('loginGate').style.display='none';
+  loadAll();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="am" id="htmlTag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>document.documentElement.style.visibility = 'hidden';</script>
+    <title>የተማሪዎች ውጤት ማረጋገጫ ፖርታል</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #eef6ff !important;
+            background-image:
+                linear-gradient(rgba(238, 246, 255, 0.74), rgba(248, 251, 255, 0.82)),
+                radial-gradient(circle at 8% 10%, rgba(59, 130, 246, 0.18), transparent 34%),
+                radial-gradient(circle at 92% 12%, rgba(16, 185, 129, 0.14), transparent 32%),
+                url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=2000&q=85");
+            background-size: cover, cover, cover, cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        html.dark body {
+            background-color: #0b1730 !important;
+            background-image:
+                linear-gradient(rgba(7, 20, 42, 0.78), rgba(8, 24, 48, 0.84)),
+                radial-gradient(circle at 8% 10%, rgba(96, 165, 250, 0.20), transparent 34%),
+                radial-gradient(circle at 92% 12%, rgba(52, 211, 153, 0.13), transparent 32%),
+                url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=2000&q=85");
+            background-size: cover, cover, cover, cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        button, select, input {
+            transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:active { transform: translateY(1px) scale(.98); }
+        @media (prefers-reduced-motion: reduce) {
+            button, select, input { transition: none !important; }
+            button:hover, button:active { transform: none; }
+        }
+        /* While locked, hide every direct child of <body> except the auth gate. */
+        body.auth-locked > *:not(#authGate) { display: none !important; }
+
+        /* ------------------------------------------------------------------
+           LOGIN / SIGN-UP GATE — lively, education-themed background
+           A slowly panning/zooming photo (Ken Burns effect) sits behind a
+           dark gradient for contrast, with a handful of floating subject
+           icons drifting around it, so the very first screen a student sees
+           feels alive rather than a flat grey box.
+           ------------------------------------------------------------------ */
+        #authBgImage {
+            position: absolute;
+            inset: -6%;
+            background-image:
+                linear-gradient(160deg, rgba(30,27,75,.35), rgba(15,23,42,.55)),
+                url("https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=80");
+            background-size: cover;
+            background-position: center;
+            animation: authKenBurns 24s ease-in-out infinite alternate;
+        }
+        html.dark #authBgImage {
+            background-image:
+                linear-gradient(160deg, rgba(2,6,23,.55), rgba(2,6,23,.75)),
+                url("https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=80");
+        }
+        @keyframes authKenBurns {
+            0%   { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.12) translate(-2%, -2%); }
+        }
+        #authBgOverlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 35%, rgba(79,70,229,.18), transparent 60%),
+                        linear-gradient(180deg, rgba(15,23,42,.55), rgba(15,23,42,.85));
+        }
+        /* Critical fallback styles: keep the login card visible even if Tailwind CDN is slow/unavailable. */
+        #authGate { position: fixed; inset: 0; z-index: 9999; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        #authBgImage, #authBgOverlay, #authFloatIcons { z-index: 0; }
+        #authBgOverlay { z-index: 1; }
+        #authFloatIcons { z-index: 2; }
+        #authGate > .relative { position: relative; z-index: 10; display: block; width: 100%; max-width: 24rem; box-sizing: border-box; background: rgba(255,255,255,.96); color: #0f172a; padding: 2rem; border-radius: 1.5rem; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+        html.dark #authGate > .relative { background: rgba(15,23,42,.96); color: white; }
+        #authGate input, #authGate select, #authGate button { font-family: inherit; }
+
+        #authFloatIcons { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .auth-float-wrap {
+            position: absolute;
+            transition: transform .25s ease-out;
+            will-change: transform;
+        }
+        .auth-float-icon {
+            display: block;
+            color: rgba(199, 210, 254, .55);
+            animation-name: authFloat;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+        }
+        @keyframes authFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50%      { transform: translateY(-22px) rotate(10deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #authBgImage { animation: none; }
+            .auth-float-icon { animation: none; }
+        }
+
+        /* Bouncy, multi-colour "Welcome" title — each letter hops up and
+           down on its own delay, like a lively channel-intro title. */
+        #authWelcomeTitle span {
+            display: inline-block;
+            font-weight: 900;
+            animation-name: authBounceLetter;
+            animation-duration: 1.4s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+        @keyframes authBounceLetter {
+            0%, 60%, 100% { transform: translateY(0); }
+            30%           { transform: translateY(-12px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #authWelcomeTitle span { animation: none; }
+        }
+
+        /* ------------------------------------------------------------------
+           PRINT / PDF SHEET
+           A plain, Tailwind-free, light-coloured copy of the report used for
+           the PDF. html2canvas can only photograph pixels that are really on
+           screen, so the sheet is shown at the top-left of the page behind an
+           opaque white backdrop for the split second the PDF is produced.
+           Its width is FIXED at 760px and the table uses table-layout:fixed,
+           which is what stops the subject column from sliding off the page
+           edge (that is why subject names were missing before).
+           ------------------------------------------------------------------ */
+        #printSheetWrap { display: none; }
+        #printSheetWrap.printing {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 760px;
+            z-index: 2147483647;
+            background: #ffffff;
+        }
+        #printBackdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 2147483646;
+        }
+        #printBackdrop.printing { display: block; }
+        @media print {
+            body > *:not(#printSheetWrap) { display: none !important; }
+            #printSheetWrap { display: block !important; position: static !important; width: auto !important; }
+            #printBackdrop { display: none !important; }
+        }
+    </style>
+</head>
+<body class="auth-locked bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-200">
+
+<!-- ================= STUDENT SIGN UP / LOGIN GATE ================= -->
+<div id="authGate" class="fixed inset-0 z-[9999] overflow-hidden flex items-center justify-center p-4">
+    <div id="authBgImage"></div>
+    <div id="authBgOverlay"></div>
+    <div id="authFloatIcons" aria-hidden="true">
+        <div class="auth-float-wrap" style="top:8%;left:8%;" data-depth="16"><i class="fa-solid fa-graduation-cap auth-float-icon" style="font-size:46px;animation-duration:7s;animation-delay:0s;"></i></div>
+        <div class="auth-float-wrap" style="top:16%;right:10%;" data-depth="22"><i class="fa-solid fa-book-open auth-float-icon" style="font-size:38px;animation-duration:8.5s;animation-delay:.6s;"></i></div>
+        <div class="auth-float-wrap" style="bottom:14%;left:12%;" data-depth="12"><i class="fa-solid fa-flask auth-float-icon" style="font-size:40px;animation-duration:9s;animation-delay:1.1s;"></i></div>
+        <div class="auth-float-wrap" style="bottom:20%;right:14%;" data-depth="26"><i class="fa-solid fa-pencil auth-float-icon" style="font-size:34px;animation-duration:6.5s;animation-delay:.3s;"></i></div>
+        <div class="auth-float-wrap" style="top:42%;left:5%;" data-depth="18"><i class="fa-solid fa-atom auth-float-icon" style="font-size:32px;animation-duration:10s;animation-delay:1.6s;"></i></div>
+        <div class="auth-float-wrap" style="top:46%;right:6%;" data-depth="14"><i class="fa-solid fa-calculator auth-float-icon" style="font-size:32px;animation-duration:7.8s;animation-delay:.9s;"></i></div>
+        <div class="auth-float-wrap" style="bottom:6%;left:44%;" data-depth="20"><i class="fa-solid fa-globe auth-float-icon" style="font-size:30px;animation-duration:8.2s;animation-delay:1.4s;"></i></div>
+    </div>
+
+    <div class="relative z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur rounded-3xl shadow-[0_0_70px_-12px_rgba(79,70,229,0.55)] p-8 w-full max-w-sm space-y-3 border border-white/40 dark:border-slate-800">
+        <div class="flex justify-end items-center gap-2">
+            <button onclick="toggleTheme()" id="authThemeBtn" class="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition text-slate-700 dark:text-white cursor-pointer flex items-center gap-1">
+                <i id="authThemeIcon" class="fa-solid fa-moon text-amber-500"></i> <span id="authThemeText">ጥቁር ጀርባ</span>
+            </button>
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 px-2 py-1 rounded-lg text-[11px] font-bold">
+                <i class="fa-solid fa-globe text-sky-500"></i>
+                <select id="authLangSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-slate-700 dark:text-white border-none focus:outline-none cursor-pointer">
+                    <option value="am" class="text-slate-900">አማርኛ</option>
+                    <option value="en" class="text-slate-900">English</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="authWelcomeTitle" class="text-center text-3xl leading-tight py-0.5"></div>
+
+        <div class="text-center space-y-2">
+            <div class="w-14 h-14 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <h2 class="text-base font-black text-indigo-700 dark:text-indigo-400" id="authGateSchoolName">SMART-SCHOOL ACADEMY</h2>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white" data-i18n="authGateTitle">ውጤትዎን ለማየት ይግቡ</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="authGateSub">ውጤት ለማየትም ካርድ ለመቀበልም መጀመሪያ አካውንት መክፈት እና መግባት ያስፈልጋል።</p>
+        </div>
+
+        <div class="flex gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
+            <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-indigo-600 text-white" data-i18n="authTabLogin">ግባ (Login)</button>
+            <button id="authTabSignupBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-transparent text-slate-600 dark:text-slate-300" data-i18n="authTabSignup">አካውንት ክፈት</button>
+        </div>
+
+        <div id="authLoginForm" class="space-y-3">
+            <input type="email" id="loginEmail" placeholder="you@example.com" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600" onkeydown="if(event.key==='Enter') attemptStudentLogin();">
+            <input type="password" id="loginPassword" data-i18n-placeholder="passwordPlaceholder" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600" onkeydown="if(event.key==='Enter') attemptStudentLogin();">
+            <p id="loginError" class="hidden text-xs font-bold text-rose-600 text-center whitespace-pre-line"></p>
+            <button onclick="attemptStudentLogin()" id="loginBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-right-to-bracket"></i><span data-i18n="loginBtnText">ግባ</span>
+            </button>
+            <button onclick="deleteStudentAccount()" class="w-full text-xs font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer pt-1" data-i18n="deleteAccountBtn">
+                አካውንት ሰርዝ (ኮድዎ ከተቀየረ)
+            </button>
+        </div>
+
+        <div id="authSignupForm" class="hidden space-y-3">
+            <input type="email" id="signupEmail" placeholder="you@example.com" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600">
+            <button type="button" onclick="requestSignupEmailCode()" id="signupSendCodeBtn" class="w-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span id="signupSendCodeBtnText" data-i18n="signupSendCodeBtnText">የማረጋገጫ ኮድ ላክ</span>
+            </button>
+            <input type="text" id="signupCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" data-i18n-placeholder="signupCodePlaceholder" placeholder="6 አሃዝ ኮድ" class="hidden w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600 tracking-widest text-center">
+            <input type="password" id="signupPassword" data-i18n-placeholder="passwordPlaceholderPlain" placeholder="ፓስወርድ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600">
+            <input type="password" id="signupPasswordConfirm" data-i18n-placeholder="passwordConfirmPlaceholder" placeholder="ፓስወርድ በድጋሚ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600">
+            <p id="signupError" class="hidden text-xs font-bold text-rose-600 text-center whitespace-pre-line"></p>
+            <button onclick="attemptStudentSignup()" id="signupBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-user-plus"></i><span data-i18n="signupBtnText">አካውንት ክፈት</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<header class="bg-slate-900 border-b border-slate-800 text-white p-4 shadow-md">
+    <div class="max-w-5xl mx-auto flex justify-between items-center gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <button onclick="logoutStudent()" id="logoutBtnWrap" class="bg-rose-600 hover:bg-rose-700 border border-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold transition text-white cursor-pointer shrink-0">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i><span data-i18n="logoutBtn">ውጣ</span>
+            </button>
+            <span class="hidden sm:flex items-center gap-1.5 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 min-w-0">
+                <i class="fa-solid fa-circle-user text-emerald-400 shrink-0"></i>
+                <span id="loggedInEmailBadge" class="truncate"></span>
+            </span>
+        </div>
+
+        <h1 class="text-base sm:text-lg font-bold flex items-center gap-2 justify-center flex-1 min-w-0">
+            <i class="fa-solid fa-graduation-cap text-amber-400 shrink-0"></i>
+            <span id="headerSchoolName" class="text-amber-300 truncate">SMART-SCHOOL ACADEMY</span>
+        </h1>
+
+        <div class="flex items-center gap-3 flex-1 justify-end">
+            <button onclick="toggleTheme()" id="themeBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition text-white cursor-pointer">
+                <i id="themeIcon" class="fa-solid fa-moon text-amber-300 mr-1"></i> <span id="themeText">ጥቁር ጀርባ</span>
+            </button>
+            <div class="flex items-center gap-1 bg-slate-800 border border-slate-700 px-2 py-1 rounded-xl text-xs font-bold">
+                <i class="fa-solid fa-globe text-sky-400"></i>
+                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-transparent text-white border-none focus:outline-none cursor-pointer">
+                    <option value="am" class="text-slate-900">አማርኛ</option>
+                    <option value="en" class="text-slate-900">English</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="modeTabsBar" class="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-1.5 flex gap-1.5">
+        <button id="tabViewResultBtn" onclick="switchMode('view')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="tabViewResult">ውጤት ይመልከቱ</span>
+        </button>
+        <button id="tabReceiveCardBtn" onclick="switchMode('card')" style="display:none !important" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-id-card"></i> <span data-i18n="tabReceiveCard">ካርድ ተቀበል</span>
+        </button>
+    </div>
+</div>
+
+<main class="max-w-4xl mx-auto p-4 sm:p-6 w-full flex-grow flex flex-col items-center justify-center">
+
+    <div id="searchCard" class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-lg space-y-4">
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto shadow-inner">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+            <h2 data-i18n="viewResult" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">ውጤትዎን ይዩ</h2>
+            <p data-i18n="formSub" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">እባክዎ የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል፣ ሰክሽን፣ የ 6 ዲጂት ኮድ እና ሙሉ ስምዎን ያስገቡ።</p>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <label data-i18n="yearLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘመን (Academic Year)</label>
+                <select id="lookupYear" onchange="populateGrades()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"></select>
+            </div>
+            <div>
+                <label data-i18n="semesterLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሴሚስተር (Semester)</label>
+                <select id="lookupSemester" onchange="populateGrades()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    <option value="">-- ሴሚስተር ይምረጡ --</option>
+                    <option value="sem1">1ኛ ሴሚስተር</option>
+                    <option value="sem2">2ኛ ሴሚስተር</option>
+                </select>
+            </div>
+            <div>
+                <label data-i18n="gradeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ክፍል (Grade)</label>
+                <select id="lookupGrade" onchange="populateStreamsOrSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    <option value="">-- ክፍል ይምረጡ --</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+            </div>
+            <div id="streamContainer" class="hidden">
+                <label data-i18n="streamLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘርፍ</label>
+                <select id="lookupStream" onchange="populateSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                    <option value="Natural">የተፈጥሮ ሳይንስ</option>
+                    <option value="Social">የማህበራዊ ሳይንስ</option>
+                </select>
+            </div>
+            <div>
+                <label data-i18n="sectionLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሰክሽን (Section)</label>
+                <select id="lookupSection" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"></select>
+            </div>
+            <div>
+                <label data-i18n="codeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የ 6 ዲጂት ኮድ (6-Digit Code)</label>
+                <input type="text" id="lookupCode" maxlength="6" placeholder="ለምሳሌ: 482910" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold tracking-widest border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            </div>
+            <div>
+                <label data-i18n="nameLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የተማሪ ሙሉ ስም (Full Name)</label>
+                <input type="text" id="lookupName" placeholder="ያሬድ ቁጭቶ" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            </div>
+            <button onclick="searchStudentResult()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span data-i18n="showResults">ውጤቴን አሳይ</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="resultCard" class="hidden bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+            <div>
+                <h3 id="resStudentName" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">ተማሪ: -</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><span id="resCodeWrap"><span data-i18n="codeShort">ኮድ</span>: <span id="resStudentCode" class="font-mono text-amber-600 dark:text-amber-400 font-bold">------</span> | </span><span data-i18n="classShort">ክፍል</span>: <span id="resStudentClass" class="font-semibold text-indigo-600 dark:text-indigo-400">--</span> | <span data-i18n="semesterShort">ሴሚስተር</span>: <span id="resStudentSemester" class="font-semibold text-emerald-600 dark:text-emerald-400">--</span></p>
+            </div>
+            <button onclick="resetSearch()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                <i class="fa-solid fa-arrow-left mr-1"></i> <span data-i18n="searchAnother">ሌላ ፈልግ</span>
+            </button>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                    <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                        <th data-i18n="noShort" class="p-3">ተራ ቁጥር</th>
+                        <th data-i18n="subjectShort" class="p-3">የትምህርት ዓይነት (Subject)</th>
+                        <th data-i18n="scoreShort" class="p-3 text-center">ያመጣው ውጤት (100%)</th>
+                    </tr>
+                </thead>
+                <tbody id="resSubjectsTbody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+            </table>
+        </div>
+        <div class="bg-indigo-50 dark:bg-slate-800/60 p-4 rounded-2xl flex justify-around items-center text-center border border-indigo-100 dark:border-slate-700">
+            <div>
+                <span data-i18n="totalShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">ጠቅላላ ድምር (Total)</span>
+                <span id="resTotalScore" class="text-lg sm:text-xl font-black text-slate-900 dark:text-white">0</span>
+            </div>
+            <div class="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
+            <div>
+                <span data-i18n="averageShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">አማካይ ውጤት (Average)</span>
+                <span id="resAvgScore" class="text-lg sm:text-xl font-black text-indigo-600 dark:text-indigo-400">0.0%</span>
+            </div>
+            <div class="h-8 w-px bg-slate-300 dark:bg-slate-700"></div>
+            <div>
+                <span data-i18n="statusShort" class="block text-xs text-slate-500 dark:text-slate-400 font-bold">ሁኔታ (Status)</span>
+                <span id="resStatus" class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">-</span>
+            </div>
+        </div>
+        <button id="downloadCardPdfBtn" onclick="downloadStudentCardPDF()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span data-i18n="downloadPdf">Download PDF</span>
+        </button>
+    </div>
+
+    <div id="cardForm" style="display:none !important" class="hidden bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-lg space-y-4">
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto shadow-inner">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+            <h2 data-i18n="receiveCardTitle" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">ካርድዎን ይቀበሉ</h2>
+            <p data-i18n="receiveCardSub" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">እባክዎ የትምህርት ዘመን፣ ክፍል፣ ሰክሽን፣ የ6 ዲጂት ኮድ እና ሙሉ ስም ያስገቡ።</p>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <label data-i18n="yearLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘመን</label>
+                <select id="cardYear" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select>
+            </div>
+            <div>
+                <label data-i18n="gradeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ክፍል (Grade)</label>
+                <select id="cardGrade" onchange="populateCardStreamsOrSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                    <option value="">-- ክፍል ይምረጡ --</option>
+                    <option value="9">Grade 9</option>
+                    <option value="10">Grade 10</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                </select>
+            </div>
+            <div id="cardStreamContainer" class="hidden">
+                <label data-i18n="streamLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የትምህርት ዘርፍ</label>
+                <select id="cardStream" onchange="populateCardSections()" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+                    <option value="Natural">የተፈጥሮ ሳይንስ</option>
+                    <option value="Social">የማህበራዊ ሳይንስ</option>
+                </select>
+            </div>
+            <div>
+                <label data-i18n="sectionLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሰክሽን (Section)</label>
+                <select id="cardSection" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700"></select>
+            </div>
+            <div>
+                <label data-i18n="codeLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">የ 6 ዲጂት ኮድ</label>
+                <input type="text" id="cardCode" maxlength="6" placeholder="482910" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold tracking-widest border border-slate-300 dark:border-slate-700">
+            </div>
+            <div>
+                <label data-i18n="nameLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">ሙሉ ስም</label>
+                <input type="text" id="cardName" class="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-sm font-bold border border-slate-300 dark:border-slate-700">
+            </div>
+            <button onclick="claimStudentCard()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2">
+                <i class="fa-solid fa-unlock-keyhole"></i>
+                <span data-i18n="receiveCardBtn">ካርድ ተቀበል</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="cardResult" style="display:none !important" class="hidden bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4">
+            <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white" data-i18n="cardReadyTitle">ካርድዎ ተዘጋጅቷል!</h3>
+            <button onclick="resetCardForm()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                <i class="fa-solid fa-arrow-left mr-1"></i> <span data-i18n="searchAnother">ሌላ ፈልግ</span>
+            </button>
+        </div>
+        <div class="relative w-full h-[320px]"><canvas id="semCompareChart"></canvas></div>
+        <div id="semCompareNumbers" class="grid grid-cols-2 gap-3 text-center"></div>
+        <button id="downloadCardFileBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span data-i18n="downloadCardFile">ካርድ አውርድ (PDF)</span>
+        </button>
+    </div>
+</main>
+
+<footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-200 dark:border-slate-800">
+    <p><span id="footerSchoolName" class="font-bold"></span> — <span data-i18n="footerText">የተማሪዎች ውጤት ማረጋገጫ ሲስተም &copy; 2026</span></p>
+</footer>
+
+<!-- Plain white backdrop + Tailwind-free sheet used for PDF / Print -->
+<div id="printBackdrop"></div>
+<div id="printSheetWrap"><div id="printSheet"></div></div>
+
+<script>
+        /* ====================================================================
+         *  ⚙️  የትምህርት ቤቱ ስም — እዚህ ብቻ ይቀይሩት
+         * --------------------------------------------------------------------
+         *  ይህ ስም በገጹ ራስጌ ላይ፣ በመግቢያ ሳጥኑ ላይ እና በሚወርደው PDF ላይኛው ክፍል ይታያል።
+         *  ለሌላ ትምህርት ቤት ሲጠቀሙ የሚቀይሩት ይህን ሁለት መስመር ብቻ ነው፦
+         *    SCHOOL_NAME    — ዋናው ስም (ለምሳሌ "CHALU SECONDARY SCHOOL")
+         *    SCHOOL_TAGLINE — ከስሙ ስር የሚጻፈው ንዑስ ጽሑፍ
+         * ==================================================================== */
+        const SCHOOL_NAME = "SMART-SCHOOL ACADEMY";
+        const SCHOOL_TAGLINE = { am: "የተማሪ ውጤት መግለጫ", en: "OFFICIAL ACADEMIC REPORT" };
+
+        let isDarkMode = false;
+
+        // ====================================================================
+        // SECURE BACKEND CONFIG
+        // ====================================================================
+        const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwT_Fdw9fAEokPjXUr0lfIiktQSWCB5IIKV6cewy5JWP9BZ2ZnniRKDqPYJmgRvi4V_/exec';
+
+        let sharedAcademicYearsList = null;
+        let sharedCurrentAcademicYear = null;
+        let sharedGradeSectionsData = null;
+        let sharedSectionRegistry = null;
+        let currentMode = 'view';
+
+        // The raw payload of the last successful lookup. Everything shown on
+        // screen and in the PDF is re-built from this, so switching language
+        // re-renders the WHOLE result (subjects, activity labels, grade,
+        // section and semester) instead of leaving half of it in the old
+        // language.
+        let lastLookup = null;   // { student, year, sem, grade, stream, section }
+        let lastResultData = null; // the rendered, language-specific view model
+
+        function applySchoolName() {
+            const header = document.getElementById('headerSchoolName');
+            const gate = document.getElementById('authGateSchoolName');
+            const foot = document.getElementById('footerSchoolName');
+            if (header) header.textContent = SCHOOL_NAME;
+            if (gate) gate.textContent = SCHOOL_NAME;
+            if (foot) foot.textContent = SCHOOL_NAME;
+        }
+
+        function backendConfigured() {
+            return BACKEND_URL && BACKEND_URL.indexOf('PASTE_YOUR_APPS_SCRIPT_URL_HERE') === -1;
+        }
+
+        // Apps Script GET responses get cached by the browser's own HTTP cache
+        // when the query string is identical, which made new data look "stuck"
+        // until a manual refresh. A changing "_" param plus no-store forces a
+        // real network request every time.
+        function noCacheUrl(url) {
+            const sep = url.indexOf('?') === -1 ? '?' : '&';
+            return `${url}${sep}_=${Date.now()}`;
+        }
+
+        /* ================= STUDENT ACCOUNT (SIGN UP / LOGIN) ================= */
+        let studentEmail = sessionStorage.getItem('studentEmail') || '';
+        let studentPassword = sessionStorage.getItem('studentPassword') || '';
+
+        // A proper email format check — letters/numbers/dots before an "@",
+        // a domain, and a real top-level suffix. This runs BEFORE the
+        // request ever reaches the server, so a bare word or random letters
+        // typed into the email field can no longer be used to open an
+        // account.
+        function isValidEmailFormat_(value) {
+            const v = String(value || '').trim();
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('authLoginForm');
+            const signupForm = document.getElementById('authSignupForm');
+            const loginBtn = document.getElementById('authTabLoginBtn');
+            const signupBtn = document.getElementById('authTabSignupBtn');
+            const active = 'flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-indigo-600 text-white';
+            const inactive = 'flex-1 py-2 rounded-lg text-xs font-bold cursor-pointer transition bg-transparent text-slate-600 dark:text-slate-300';
+
+            if (tab === 'signup') {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                signupBtn.className = active;
+                loginBtn.className = inactive;
+            } else {
+                signupForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                loginBtn.className = active;
+                signupBtn.className = inactive;
+            }
+        }
+
+        function showAuthError(elId, message) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        function getHostDeviceId() {
+            const key = 'smartSchoolHostDeviceId';
+            let id = '';
+            try { id = localStorage.getItem(key) || ''; } catch (e) {}
+            if (!id) {
+                id = 'HDEV-' + (window.crypto && crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + '-' + Math.random().toString(36).slice(2));
+                try { localStorage.setItem(key, id); } catch (e) {}
+            }
+            return id;
+        }
+
+        async function postToBackend(payload) {
+            const requestPayload = Object.assign({}, payload || {});
+            // The backend now checks deviceId during login. Include a stable ID
+            // for the host portal as well as for the parent portal.
+            if (!requestPayload.deviceId) requestPayload.deviceId = getHostDeviceId();
+            const res = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(requestPayload)
+            });
+            return await res.json();
+        }
+
+        let signupCodeSent = false;
+        let signupCodeSentForEmail = '';
+
+        async function requestSignupEmailCode() {
+            const emailInput = document.getElementById('signupEmail');
+            const errEl = document.getElementById('signupError');
+            const btn = document.getElementById('signupSendCodeBtn');
+            const email = emailInput ? emailInput.value.trim() : '';
+            errEl.classList.add('hidden');
+
+            if (!email || !isValidEmailFormat_(email)) {
+                showAuthError('signupError', currentHostLang === 'am'
+                    ? 'ትክክለኛ የኢሜይል አድራሻ ያስገቡ (ለምሳሌ you@example.com)።'
+                    : 'Please enter a valid email address (e.g. you@example.com).');
+                return;
+            }
+            if (!backendConfigured()) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'ስርዓቱ ከ Server ጋር አልተገናኘም።' : 'The backend is not configured.');
+                return;
+            }
+
+            btn.disabled = true;
+            const oldText = document.getElementById('signupSendCodeBtnText').textContent;
+            document.getElementById('signupSendCodeBtnText').textContent = '...';
+            try {
+                const data = await postToBackend({ action: 'requestSignupCode', email, host: 'host' });
+                if (data && data.status === 'sent') {
+                    signupCodeSent = true;
+                    signupCodeSentForEmail = email;
+                    document.getElementById('signupCode').classList.remove('hidden');
+                    document.getElementById('signupCode').focus();
+                    alert(currentHostLang === 'am'
+                        ? 'የማረጋገጫ ኮድ ወደ ኢሜይልዎ ተልኳል። እባክዎ ኢሜይልዎን ይመልከቱና ከታች ያስገቡ።'
+                        : 'A verification code was sent to your email. Please check your inbox and enter it below.');
+                } else if (data && data.status === 'email_taken') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'ይህ ኢሜይል አስቀድሞ ተመዝግቧል። እባክዎ ይግቡ።' : 'This email is already registered. Please log in.');
+                } else if (data && data.status === 'bad_email') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'ትክክለኛ ኢሜይል ያስገቡ።' : 'Please enter a valid email.');
+                } else {
+                    showAuthError('signupError', (currentHostLang === 'am' ? 'ኮድ መላክ አልተቻለም። እንደገና ይሞክሩ።' : 'Could not send the code. Please try again.') + (data && data.detail ? ('\n' + data.detail) : ''));
+                }
+            } catch (e) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+            } finally {
+                btn.disabled = false;
+                document.getElementById('signupSendCodeBtnText').textContent = oldText;
+            }
+        }
+
+        async function attemptStudentSignup() {
+            const email = document.getElementById('signupEmail').value.trim();
+            const pw = document.getElementById('signupPassword').value;
+            const pw2 = document.getElementById('signupPasswordConfirm').value;
+            const code = document.getElementById('signupCode').value.trim();
+            const btn = document.getElementById('signupBtn');
+            document.getElementById('signupError').classList.add('hidden');
+
+            if (!email || !pw) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ።' : 'Please enter an email and password.');
+                return;
+            }
+            if (!isValidEmailFormat_(email)) {
+                showAuthError('signupError', currentHostLang === 'am'
+                    ? 'ትክክለኛ የኢሜይል አድራሻ ያስገቡ (ለምሳሌ you@example.com)።'
+                    : 'Please enter a valid email address (e.g. you@example.com).');
+                return;
+            }
+            if (pw !== pw2) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'ሁለቱ ፓስወርዶች አይመሳሰሉም።' : 'The two passwords do not match.');
+                return;
+            }
+            if (!signupCodeSent || signupCodeSentForEmail !== email) {
+                showAuthError('signupError', currentHostLang === 'am'
+                    ? 'እባክዎ መጀመሪያ "የማረጋገጫ ኮድ ላክ" የሚለውን ተጭነው ወደ ኢሜይልዎ የተላከውን ኮድ ያስገቡ።'
+                    : 'Please tap "Send Verification Code" first and enter the code sent to your email.');
+                return;
+            }
+            if (!code) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'እባክዎ የማረጋገጫ ኮዱን ያስገቡ።' : 'Please enter the verification code.');
+                return;
+            }
+            if (!backendConfigured()) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'ስርዓቱ ከ Server ጋር አልተገናኘም።' : 'The backend is not configured.');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const data = await postToBackend({ action: 'signup', email, password: pw, code, host: 'host' });
+                if (data && data.status === 'created') {
+                    signupCodeSent = false;
+                    signupCodeSentForEmail = '';
+                    document.getElementById('signupCode').value = '';
+                    document.getElementById('signupCode').classList.add('hidden');
+                    alert(currentHostLang === 'am' ? 'አካውንት ተፈጥሯል! አሁን ይግቡ።' : 'Account created! You can now log in.');
+                    document.getElementById('loginEmail').value = email;
+                    switchAuthTab('login');
+                } else if (data && data.status === 'invalid_code') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'የገባው ኮድ ትክክል አይደለም ወይም ጊዜው አልፎበታል።' : 'The code is invalid or has expired.');
+                } else if (data && data.status === 'email_taken') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'ይህ ኢሜይል አስቀድሞ ተመዝግቧል። እባክዎ ይግቡ።' : 'This email is already registered. Please log in.');
+                } else if (data && data.status === 'bad_email') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'ትክክለኛ ኢሜይል ያስገቡ።' : 'Please enter a valid email.');
+                } else if (data && data.status === 'weak_password') {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'ፓስወርድ ቢያንስ 4 ፊደል መሆን አለበት።' : 'Password must be at least 4 characters.');
+                } else {
+                    showAuthError('signupError', currentHostLang === 'am' ? 'አልተሳካም። እንደገና ይሞክሩ።' : 'Failed. Please try again.');
+                }
+            } catch (e) {
+                showAuthError('signupError', currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        /* ------------------------------------------------------------------
+           BRUTE-FORCE LOCKOUT for the student login form
+           After 2 wrong attempts the login form locks for a cool-down
+           period, so a password cannot be guessed by repeated trial and
+           error. Tracked in sessionStorage so refreshing the tab does not
+           reset it.
+           ------------------------------------------------------------------ */
+        const STUDENT_LOGIN_MAX_ATTEMPTS = 2;
+        const STUDENT_LOGIN_LOCKOUT_MS = 60 * 1000;
+
+        function getStudentLoginLockState() {
+            return {
+                attempts: parseInt(sessionStorage.getItem('studentLoginAttempts') || '0', 10),
+                lockedUntil: parseInt(sessionStorage.getItem('studentLoginLockedUntil') || '0', 10)
+            };
+        }
+
+        function studentLoginRemainingLockMs() {
+            const { lockedUntil } = getStudentLoginLockState();
+            return Math.max(0, lockedUntil - Date.now());
+        }
+
+        let studentLoginLockTimer = null;
+        function updateStudentLoginLockUI() {
+            const btn = document.getElementById('loginBtn');
+            const emailInput = document.getElementById('loginEmail');
+            const pwInput = document.getElementById('loginPassword');
+            const remaining = studentLoginRemainingLockMs();
+            if (remaining <= 0) {
+                if (studentLoginLockTimer) { clearInterval(studentLoginLockTimer); studentLoginLockTimer = null; }
+                if (btn) btn.disabled = false;
+                if (emailInput) emailInput.disabled = false;
+                if (pwInput) pwInput.disabled = false;
+                return;
+            }
+            if (btn) btn.disabled = true;
+            if (emailInput) emailInput.disabled = true;
+            if (pwInput) pwInput.disabled = true;
+            const seconds = Math.ceil(remaining / 1000);
+            showAuthError('loginError', currentHostLang === 'am'
+                ? `ብዙ ጊዜ የተሳሳተ ፓስወርድ ተሞክሯል። እባክዎ ${seconds} ሰከንድ ይጠብቁ።`
+                : `Too many wrong attempts. Please wait ${seconds}s before trying again.`);
+            if (!studentLoginLockTimer) {
+                studentLoginLockTimer = setInterval(updateStudentLoginLockUI, 1000);
+            }
+        }
+
+        async function attemptStudentLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pw = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            document.getElementById('loginError').classList.add('hidden');
+
+            if (studentLoginRemainingLockMs() > 0) {
+                updateStudentLoginLockUI();
+                return;
+            }
+
+            if (!email || !pw) {
+                showAuthError('loginError', currentHostLang === 'am' ? 'እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ።' : 'Please enter your email and password.');
+                return;
+            }
+            if (!isValidEmailFormat_(email)) {
+                showAuthError('loginError', currentHostLang === 'am'
+                    ? 'ትክክለኛ የኢሜይል አድራሻ ያስገቡ (ለምሳሌ you@example.com)።'
+                    : 'Please enter a valid email address (e.g. you@example.com).');
+                return;
+            }
+            if (!backendConfigured()) {
+                showAuthError('loginError', currentHostLang === 'am' ? 'ስርዓቱ ከ Server ጋር አልተገናኘም።' : 'The backend is not configured.');
+                return;
+            }
+
+            btn.disabled = true;
+            try {
+                const data = await postToBackend({ action: 'login', email, password: pw, host: 'host' });
+                if (data && data.status === 'ok') {
+                    sessionStorage.removeItem('studentLoginAttempts');
+                    sessionStorage.removeItem('studentLoginLockedUntil');
+                    studentEmail = email;
+                    studentPassword = pw;
+                    sessionStorage.setItem('studentEmail', email);
+                    sessionStorage.setItem('studentPassword', pw);
+                    unlockHostPage();
+                } else if (data && data.status === 'no_account') {
+                    showAuthError('loginError', currentHostLang === 'am'
+                        ? 'በዚህ ኢሜይል አካውንት የለም። መጀመሪያ "አካውንት ክፈት" የሚለውን ይጫኑ።'
+                        : 'No account with this email. Please use "Sign up" first.');
+                } else if (data && data.status === 'wrong_password') {
+                    const attempts = getStudentLoginLockState().attempts + 1;
+                    sessionStorage.setItem('studentLoginAttempts', String(attempts));
+                    if (attempts >= STUDENT_LOGIN_MAX_ATTEMPTS) {
+                        sessionStorage.setItem('studentLoginLockedUntil', String(Date.now() + STUDENT_LOGIN_LOCKOUT_MS));
+                        sessionStorage.setItem('studentLoginAttempts', '0');
+                        updateStudentLoginLockUI();
+                    } else {
+                        showAuthError('loginError', currentHostLang === 'am' ? 'ፓስወርድ ተሳስተዋል።' : 'Wrong password.');
+                    }
+                } else {
+                    showAuthError('loginError', currentHostLang === 'am' ? 'መግባት አልተቻለም።' : 'Could not log in.');
+                }
+            } catch (e) {
+                showAuthError('loginError', currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+            } finally {
+                if (studentLoginRemainingLockMs() <= 0) btn.disabled = false;
+            }
+        }
+
+        function unlockHostPage() {
+            document.body.classList.remove('auth-locked');
+            const gate = document.getElementById('authGate');
+            if (gate) gate.style.display = 'none';
+            const badge = document.getElementById('loggedInEmailBadge');
+            if (badge) badge.textContent = studentEmail;
+            loadMetaFromBackend();
+        }
+
+        function logoutStudent() {
+            studentEmail = '';
+            studentPassword = '';
+            sessionStorage.removeItem('studentEmail');
+            sessionStorage.removeItem('studentPassword');
+            lastLookup = null;
+            lastResultData = null;
+            document.body.classList.add('auth-locked');
+            const gate = document.getElementById('authGate');
+            if (gate) gate.style.display = 'flex';
+            switchAuthTab('login');
+            document.getElementById('loginPassword').value = '';
+        }
+
+        async function deleteStudentAccount() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pw = document.getElementById('loginPassword').value;
+            document.getElementById('loginError').classList.add('hidden');
+
+            if (!email || !pw) {
+                showAuthError('loginError', currentHostLang === 'am'
+                    ? 'ለመሰረዝ ኢሜይልዎን እና ፓስወርድዎን ከላይ ያስገቡ።'
+                    : 'Enter your email and password above to delete the account.');
+                return;
+            }
+            const sure = confirm(currentHostLang === 'am'
+                ? 'አካውንትዎ ይሰረዛል። ከዚያ በኋላ በአዲሱ ኮድ እንደገና አካውንት መክፈት ይችላሉ። ይቀጥሉ?'
+                : 'Your account will be deleted. You can then sign up again with your new code. Continue?');
+            if (!sure) return;
+
+            try {
+                const data = await postToBackend({ action: 'deleteAccount', email, password: pw, host: 'host' });
+                if (data && data.status === 'deleted') {
+                    alert(currentHostLang === 'am' ? 'አካውንቱ ተሰርዟል። አሁን አዲስ አካውንት ይክፈቱ።' : 'Account deleted. You can now sign up again.');
+                    document.getElementById('signupEmail').value = email;
+                    switchAuthTab('signup');
+                } else if (data && data.status === 'wrong_password') {
+                    showAuthError('loginError', currentHostLang === 'am' ? 'ፓስወርድ ተሳስተዋል።' : 'Wrong password.');
+                } else if (data && data.status === 'no_account') {
+                    showAuthError('loginError', currentHostLang === 'am' ? 'በዚህ ኢሜይል አካውንት የለም።' : 'No account with this email.');
+                } else {
+                    showAuthError('loginError', currentHostLang === 'am' ? 'መሰረዝ አልተቻለም።' : 'Could not delete the account.');
+                }
+            } catch (e) {
+                showAuthError('loginError', currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+            }
+        }
+
+        function accountStatusMessage(status) {
+            const am = currentHostLang === 'am';
+            if (status === 'no_account') return am ? 'አካውንትዎ አልተገኘም። እባክዎ እንደገና ይግቡ።' : 'Account not found. Please log in again.';
+            if (status === 'wrong_password') return am ? 'የመግቢያ መረጃዎ ትክክል አይደለም። እባክዎ እንደገና ይግቡ።' : 'Your credentials are invalid. Please log in again.';
+            if (status === 'account_bound_to_other') return am
+                ? 'ይህ አካውንት አስቀድሞ ከሌላ ተማሪ (ኮድና ስም) ጋር ተመዝግቧል። በዚህ አካውንት የሌላ ተማሪን ውጤት ማየት አይችሉም።\n\nኮድዎ በአድሚን ተቀይሮ ከሆነ፣ ውጡና በመግቢያ ገጹ ላይ "አካውንት ሰርዝ" የሚለውን ተጠቅመው አዲስ አካውንት ይክፈቱ።'
+                : 'This account is already tied to a different student. You cannot view another student\'s result from it.\n\nIf your code was changed by the admin, log out and use "Delete account" on the login page, then sign up again.';
+            if (status === 'student_already_claimed') return am
+                ? 'ይህ ኮድና ስም አስቀድሞ በሌላ ኢሜይል አካውንት ተመዝግቧል።'
+                : 'This code and name have already been claimed by another email account.';
+            return null;
+        }
+
+        async function loadMetaFromBackend() {
+            if (!backendConfigured()) return;
+            try {
+                const res = await fetch(noCacheUrl(`${BACKEND_URL}?action=meta`), { cache: 'no-store' });
+                const data = await res.json();
+                if (data && data.ok) {
+                    sharedAcademicYearsList = (data.academicYearsList || []).map(String);
+                    sharedCurrentAcademicYear = data.currentAcademicYear ? String(data.currentAcademicYear) : null;
+                    sharedGradeSectionsData = data.gradeSectionsData || null;
+                    sharedSectionRegistry = data.sectionRegistry || null;
+                }
+            } catch (e) {
+                console.warn('Could not reach backend for meta:', e);
+            } finally {
+                populateYears();
+                populateGrades();
+                populateSections();
+                populateCardYears();
+                populateCardGrades();
+            }
+        }
+
+        function getAcademicYears() {
+            if (Array.isArray(sharedAcademicYearsList) && sharedAcademicYearsList.length) return sharedAcademicYearsList.map(String);
+            const currentYear = new Date().getFullYear() + 8;
+            return [String(currentYear - 1), String(currentYear), String(currentYear + 1)];
+        }
+
+        function populateYears() {
+            const select = document.getElementById('lookupYear');
+            if (!select) return;
+            const oldValue = select.value || sharedCurrentAcademicYear || '';
+            const years = getAcademicYears();
+            select.innerHTML = `<option value="">${currentHostLang === 'am' ? '-- የትምህርት ዘመን ይምረጡ --' : '-- Select Academic Year --'}</option>`;
+            years.forEach(year => {
+                select.insertAdjacentHTML('beforeend', `<option value="${year}">${year} ${currentHostLang === 'am' ? 'ዓ.ም' : 'A.Y.'}</option>`);
+            });
+            select.value = (oldValue && years.includes(oldValue)) ? oldValue : '';
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            const authIcon = document.getElementById('authThemeIcon');
+            const authText = document.getElementById('authThemeText');
+            const lightLabel = currentHostLang === 'am' ? 'ነጭ ጀርባ' : 'White BG';
+            const darkLabel = currentHostLang === 'am' ? 'ጥቁር ጀርባ' : 'Black BG';
+            if (isDarkMode) {
+                html.classList.add('dark');
+                if (icon) icon.className = 'fa-solid fa-sun text-amber-400 mr-1';
+                if (text) text.innerText = lightLabel;
+                if (authIcon) authIcon.className = 'fa-solid fa-sun text-amber-500';
+                if (authText) authText.innerText = lightLabel;
+            } else {
+                html.classList.remove('dark');
+                if (icon) icon.className = 'fa-solid fa-moon text-amber-300 mr-1';
+                if (text) text.innerText = darkLabel;
+                if (authIcon) authIcon.className = 'fa-solid fa-moon text-amber-500';
+                if (authText) authText.innerText = darkLabel;
+            }
+        }
+
+        const gradeSubjects = {
+            9: ["English", "Maths", "Physics", "Biology", "Chemistry", "Civics", "Economics", "History", "HPE", "ICT", "አማርኛ", "Kaffinoonoo", "Geography"],
+            10: ["English", "Maths", "Physics", "Biology", "Chemistry", "Civics", "Economics", "History", "HPE", "ICT", "አማርኛ", "Kaffinoonoo", "Geography"],
+            11: {
+                Natural: ["Maths", "English", "Physics", "Chemistry", "Biology", "ICT", "Civics", "HPE", "Technical Drawing"],
+                Social: ["Maths", "English", "Geography", "History", "Economics", "Civics", "ICT", "HPE", "Business"]
+            },
+            12: {
+                Natural: ["Maths", "English", "Physics", "Chemistry", "Biology", "ICT", "Civics", "SAT"],
+                Social: ["Maths", "English", "Geography", "History", "Economics", "Civics", "ICT", "SAT"]
+            }
+        };
+
+        /* ==================================================================
+           ASSESSMENT COMPONENTS (Detailed marks)
+           admin.html publishes its assessment configuration as an ARRAY of
+           parts — [{key, label, labelKey, max}, ...] — so the school can add
+           its own activities. Older data used a fixed OBJECT
+           ({classTest: 10, ...}). Both shapes are accepted here.
+           ================================================================== */
+        const BUILTIN_PARTS = [
+            { key: 'classTest',     label: { am: 'ክላስ ተስት',   en: 'Class Test' } },
+            { key: 'classActivity', label: { am: 'ክላስ አክቲቪቲ', en: 'Class Activity' } },
+            { key: 'assignment',    label: { am: 'አሳይመንት',    en: 'Assignment' } },
+            { key: 'finalTest',     label: { am: 'ፍጻሜ ፈተና',   en: 'Final Test' } }
+        ];
+
+        function builtinPartLabel_(key) {
+            const found = BUILTIN_PARTS.find(p => p.key === key);
+            return found ? found.label[currentHostLang] : null;
+        }
+
+        function normalizeAssessmentConfig_(cfg) {
+            if (!cfg) return [];
+            if (Array.isArray(cfg)) {
+                return cfg
+                    .map(p => {
+                        if (!p || !p.key) return null;
+                        const label = builtinPartLabel_(p.labelKey) || builtinPartLabel_(p.key) || p.label || p.key;
+                        return { key: p.key, label: String(label), max: parseFloat(p.max) || 0 };
+                    })
+                    .filter(p => p && p.max > 0);
+            }
+            if (typeof cfg === 'object') {
+                return BUILTIN_PARTS
+                    .map(p => ({ key: p.key, label: p.label[currentHostLang], max: parseFloat(cfg[p.key]) || 0 }))
+                    .filter(p => p.max > 0);
+            }
+            return [];
+        }
+
+        function subjectPartsFor_(breakdownEntry, parts) {
+            if (!breakdownEntry || !parts.length) return [];
+            return parts.map(p => ({
+                label: p.label,
+                value: parseFloat(breakdownEntry[p.key]) || 0,
+                max: p.max
+            }));
+        }
+
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
+        }
+
+        // Once a student is actually looking at a result or a card, the
+        // "ካርድ ተቀበል/View Result" tab switcher and the "ውጣ/Log out" button are
+        // hidden, so the page reads as a clean, printable report rather than
+        // an app screen. They come back the moment the student goes back to
+        // search / claim another one.
+        function setChromeForResultView(viewingResult) {
+            const tabs = document.getElementById('modeTabsBar');
+            const logoutBtn = document.getElementById('logoutBtnWrap');
+            if (tabs) tabs.classList.toggle('hidden', viewingResult);
+            if (logoutBtn) logoutBtn.classList.toggle('hidden', viewingResult);
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            setChromeForResultView(false);
+            const viewBtn = document.getElementById('tabViewResultBtn');
+            const cardBtn = document.getElementById('tabReceiveCardBtn');
+            const active = 'bg-indigo-600 text-white';
+            const inactive = 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800';
+            const base = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2';
+
+            document.getElementById('searchCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('cardForm').classList.add('hidden');
+            document.getElementById('cardResult').classList.add('hidden');
+
+            if (mode === 'view') {
+                viewBtn.className = `${base} ${active}`;
+                cardBtn.className = `${base} ${inactive}`;
+                document.getElementById('searchCard').classList.remove('hidden');
+            } else {
+                cardBtn.className = `${base} ${active}`;
+                viewBtn.className = `${base} ${inactive}`;
+                document.getElementById('cardForm').classList.remove('hidden');
+                populateCardYears();
+                populateCardGrades();
+            }
+        }
+
+        // Makes the floating login-screen icons drift toward the mouse (or,
+        // on a touchscreen, the finger) as it moves across the gate, on top
+        // of their own gentle up-down bob. Each icon has its own "depth" so
+        // they don't all move in lockstep -- a simple parallax feel.
+        function initAuthFloatParallax() {
+            const gate = document.getElementById('authGate');
+            const wraps = Array.from(document.querySelectorAll('.auth-float-wrap'));
+            if (!gate || !wraps.length) return;
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            function applyPointer(clientX, clientY) {
+                const rect = gate.getBoundingClientRect();
+                const nx = ((clientX - rect.left) / rect.width) * 2 - 1;   // -1..1
+                const ny = ((clientY - rect.top) / rect.height) * 2 - 1;   // -1..1
+                wraps.forEach(w => {
+                    const depth = parseFloat(w.getAttribute('data-depth')) || 15;
+                    w.style.transform = `translate(${(nx * depth).toFixed(1)}px, ${(ny * depth).toFixed(1)}px)`;
+                });
+            }
+
+            gate.addEventListener('mousemove', e => applyPointer(e.clientX, e.clientY));
+            gate.addEventListener('touchmove', e => {
+                if (e.touches && e.touches[0]) applyPointer(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            gate.addEventListener('mouseleave', () => {
+                wraps.forEach(w => { w.style.transform = 'translate(0,0)'; });
+            });
+        }
+
+        window.onload = function() {
+            applySchoolName();
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) langSelect.value = currentHostLang;
+            const authLangSelect = document.getElementById('authLangSelect');
+            if (authLangSelect) authLangSelect.value = currentHostLang;
+            changeLanguage(currentHostLang);
+            switchMode('view');
+            switchAuthTab('login');
+            initAuthFloatParallax();
+            updateStudentLoginLockUI();
+
+            if (studentEmail && studentPassword) {
+                unlockHostPage();
+            }
+
+            setInterval(function() { if (!document.body.classList.contains('auth-locked')) loadMetaFromBackend(); }, 12000);
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && !document.body.classList.contains('auth-locked')) loadMetaFromBackend();
+            });
+        };
+
+        function populateGrades() {
+            const gradeSelect = document.getElementById('lookupGrade');
+            if (!gradeSelect) return;
+            const currentSelected = gradeSelect.value || "";
+            gradeSelect.innerHTML = `
+                <option value="">${currentHostLang === 'am' ? '-- ክፍል ይምረጡ --' : '-- Select Grade --'}</option>
+                <option value="9">${currentHostLang === 'am' ? '9ኛ ክፍል' : 'Grade 9'}</option>
+                <option value="10">${currentHostLang === 'am' ? '10ኛ ክፍል' : 'Grade 10'}</option>
+                <option value="11">${currentHostLang === 'am' ? '11ኛ ክፍል' : 'Grade 11'}</option>
+                <option value="12">${currentHostLang === 'am' ? '12ኛ ክፍል' : 'Grade 12'}</option>
+            `;
+            gradeSelect.value = currentSelected;
+            populateStreamsOrSections();
+        }
+
+        function populateStreamsOrSections() {
+            const grade = document.getElementById('lookupGrade').value;
+            const streamContainer = document.getElementById('streamContainer');
+            if (parseInt(grade) >= 11) streamContainer.classList.remove('hidden');
+            else streamContainer.classList.add('hidden');
+            populateSections();
+        }
+
+        function populateSections() {
+            const year = document.getElementById('lookupYear').value;
+            const sem = document.getElementById('lookupSemester').value;
+            const grade = document.getElementById('lookupGrade').value;
+            const stream = document.getElementById('lookupStream').value;
+            const sectionSelect = document.getElementById('lookupSection');
+            if (!sectionSelect) return;
+            const currentSec = sectionSelect.value;
+
+            sectionSelect.innerHTML = `<option value="">${currentHostLang === 'am' ? '-- ሰክሽን ይምረጡ --' : '-- Select Section --'}</option>`;
+            let foundSections = new Set();
+            const postedRegistry = sharedSectionRegistry || {};
+            const registryKey = `${year}_${sem}_${grade}_${parseInt(grade) >= 11 ? stream : 'none'}`;
+            if (Array.isArray(postedRegistry[registryKey])) {
+                postedRegistry[registryKey].forEach(s => { if (s) foundSections.add(String(s).trim().toUpperCase()); });
+            }
+            if (foundSections.size === 0) ['A', 'B', 'C', 'D', 'E', 'F'].forEach(s => foundSections.add(s));
+
+            Array.from(foundSections).sort().forEach(s => {
+                sectionSelect.innerHTML += `<option value="${s}">${currentHostLang === 'am' ? 'ሰክሽን' : 'Section'} ${s}</option>`;
+            });
+            if (currentSec && Array.from(sectionSelect.options).some(opt => opt.value === currentSec)) sectionSelect.value = currentSec;
+        }
+
+        function populateCardYears() {
+            const select = document.getElementById('cardYear');
+            if (!select) return;
+            const oldValue = select.value;
+            const years = getAcademicYears();
+            select.innerHTML = years.map(y => `<option value="${y}">${y} ${currentHostLang === 'am' ? 'ዓ.ም' : 'A.Y.'}</option>`).join('');
+            if (oldValue && years.includes(oldValue)) select.value = oldValue;
+        }
+
+        function populateCardGrades() { populateCardStreamsOrSections(); }
+
+        function populateCardStreamsOrSections() {
+            const grade = document.getElementById('cardGrade').value;
+            const streamContainer = document.getElementById('cardStreamContainer');
+            if (parseInt(grade) >= 11) streamContainer.classList.remove('hidden');
+            else streamContainer.classList.add('hidden');
+            populateCardSections();
+        }
+
+        function populateCardSections() {
+            const year = document.getElementById('cardYear').value;
+            const grade = document.getElementById('cardGrade').value;
+            const stream = document.getElementById('cardStream') ? document.getElementById('cardStream').value : '';
+            const sectionSelect = document.getElementById('cardSection');
+            if (!sectionSelect) return;
+            const currentSec = sectionSelect.value;
+            sectionSelect.innerHTML = '';
+            let foundSections = new Set();
+            const postedRegistry = sharedSectionRegistry || {};
+            ['sem1', 'sem2'].forEach(sem => {
+                const registryKey = `${year}_${sem}_${grade}_${parseInt(grade) >= 11 ? stream : 'none'}`;
+                if (Array.isArray(postedRegistry[registryKey])) {
+                    postedRegistry[registryKey].forEach(s => { if (s) foundSections.add(String(s).trim().toUpperCase()); });
+                }
+            });
+            if (foundSections.size === 0) ['A', 'B', 'C', 'D', 'E', 'F'].forEach(s => foundSections.add(s));
+            Array.from(foundSections).sort().forEach(s => {
+                sectionSelect.innerHTML += `<option value="${s}">${currentHostLang === 'am' ? 'ሰክሽን' : 'Section'} ${s}</option>`;
+            });
+            if (currentSec && Array.from(sectionSelect.options).some(opt => opt.value === currentSec)) sectionSelect.value = currentSec;
+        }
+
+        async function searchStudentResult() {
+            const year = document.getElementById('lookupYear').value;
+            const sem = document.getElementById('lookupSemester').value;
+            const grade = document.getElementById('lookupGrade').value;
+            const stream = document.getElementById('lookupStream').value;
+            const section = document.getElementById('lookupSection').value;
+            const code = document.getElementById('lookupCode').value.trim();
+            const nameInput = document.getElementById('lookupName').value.trim();
+
+            if (!year || !sem || !grade || !section) {
+                alert(currentHostLang === 'am' ? 'እባክዎ የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል እና ሰክሽን ይምረጡ!' : 'Please select the academic year, semester, grade and section!');
+                return;
+            }
+            if (parseInt(grade) >= 11 && !stream) {
+                alert(currentHostLang === 'am' ? 'እባክዎ የትምህርት ዘርፍ ይምረጡ!' : 'Please select the stream!');
+                return;
+            }
+            if (!code || !nameInput) {
+                alert(currentHostLang === 'am' ? 'እባክዎ የ6 ዲጂት ኮድ እና ሙሉ ስም ያስገቡ!' : 'Please enter the 6-digit code and full name!');
+                return;
+            }
+            if (!studentEmail || !studentPassword) { logoutStudent(); return; }
+
+            const searchBtn = document.querySelector('#searchCard button[onclick="searchStudentResult()"]');
+            const oldBtnHtml = searchBtn ? searchBtn.innerHTML : '';
+            if (searchBtn) {
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = currentHostLang === 'am'
+                    ? '<i class="fa-solid fa-spinner fa-spin"></i><span> በመፈለግ ላይ...</span>'
+                    : '<i class="fa-solid fa-spinner fa-spin"></i><span> Searching...</span>';
+            }
+
+            let data;
+            try {
+                const qs = new URLSearchParams({
+                    action: 'lookup', year, semester: sem, grade,
+                    stream: parseInt(grade) >= 11 ? stream : '', section, code, name: nameInput,
+                    email: studentEmail, password: studentPassword, host: 'host'
+                });
+                const res = await fetch(noCacheUrl(`${BACKEND_URL}?${qs.toString()}`), { cache: 'no-store' });
+                data = await res.json();
+            } catch (e) {
+                alert(currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+                if (searchBtn) { searchBtn.disabled = false; searchBtn.innerHTML = oldBtnHtml; }
+                return;
+            }
+            if (searchBtn) { searchBtn.disabled = false; searchBtn.innerHTML = oldBtnHtml; }
+
+            if (!data || !data.ok) {
+                alert(currentHostLang === 'am' ? 'ጥያቄው አልተሳካም።' : 'The request failed.');
+                return;
+            }
+
+            const accountMsg = accountStatusMessage(data.status);
+            if (accountMsg) { alert(accountMsg); return; }
+
+            if (data.status === 'not_found' || data.status === 'blocked') {
+                alert(currentHostLang === 'am'
+                    ? 'ያስገቡት 6 ዲጂት ኮድ እና ሙሉ ስም አልተገኘም፣ ወይም ተማሪው በአድሚን ታግዷል!'
+                    : 'The 6-digit code and full name were not found, or the student has been blocked by the admin!');
+                return;
+            }
+            if (data.status === 'location_mismatch') {
+                const locs = data.locations || [];
+                const places = locs.map(l => {
+                    const semText = l.semester === 'sem1'
+                        ? (currentHostLang === 'am' ? '1ኛ ሴሚስተር' : '1st Semester')
+                        : (currentHostLang === 'am' ? '2ኛ ሴሚስተር' : '2nd Semester');
+                    return `${l.year} / ${semText} / Grade ${l.grade}${l.stream ? ` (${l.stream})` : ''} / Section ${l.section}`;
+                }).join('\n');
+                alert((currentHostLang === 'am'
+                    ? 'ኮድዎና ስምዎ ትክክል ነው፣ ግን ከመረጡት ቦታ ጋር አይመሳሰልም።\n\nየተመዘገቡበት ቦታ:\n'
+                    : 'Your code and name are correct, but do not match the location you selected.\n\nYou are registered at:\n') + places);
+                return;
+            }
+
+            // Everything needed to (re)draw the result in ANY language.
+            lastLookup = {
+                student: data.student,
+                year: year,
+                sem: sem,
+                grade: grade,
+                stream: parseInt(grade) >= 11 ? stream : '',
+                section: section
+            };
+
+            document.getElementById('searchCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.remove('hidden');
+            setChromeForResultView(true);
+            renderResultCard();
+        }
+
+        function semesterLabel_(sem) {
+            if (currentHostLang === 'am') return sem === 'sem1' ? '1ኛ ሴሚስተር' : '2ኛ ሴሚስተር';
+            return sem === 'sem1' ? '1st Semester' : '2nd Semester';
+        }
+
+        function gradeClassLabel_(grade, stream, section) {
+            if (currentHostLang === 'am') {
+                const streamText = parseInt(grade) >= 11 && stream
+                    ? ` (${stream === 'Natural' ? 'የተፈጥሮ ሳይንስ' : 'የማህበራዊ ሳይንስ'})`
+                    : '';
+                return `${grade}ኛ ክፍል${streamText} - ሰክሽን ${section}`;
+            }
+            const streamText = parseInt(grade) >= 11 && stream ? ` (${stream} Science)` : '';
+            return `Grade ${grade}${streamText} - Section ${section}`;
+        }
+
+        /**
+         * Draws the on-screen result card from lastLookup using the CURRENT
+         * language, and stores the same view model for the PDF. This is the
+         * single place the result is rendered, which is why switching the
+         * language now also switches the subject names, the activity labels
+         * AND the grade / section / semester line.
+         */
+        function renderResultCard() {
+            if (!lastLookup) return;
+            const { student, sem, grade, stream, section } = lastLookup;
+
+            const subjects = (Array.isArray(student.subjects) && student.subjects.length)
+                ? student.subjects
+                : (parseInt(grade) >= 11 ? (gradeSubjects[grade]?.[stream] || []) : (gradeSubjects[grade] || []));
+
+            const semesterText = semesterLabel_(sem);
+            const gradeClassText = gradeClassLabel_(grade, stream, section);
+
+            document.getElementById('resStudentName').innerText = student.name;
+            document.getElementById('resStudentCode').innerText = student.code;
+            document.getElementById('resStudentClass').innerText = gradeClassText;
+            document.getElementById('resStudentSemester').innerText = semesterText;
+
+            const breakdown = Array.isArray(student.breakdown) ? student.breakdown : [];
+            const parts = normalizeAssessmentConfig_(student.assessmentConfig);
+
+            const tbody = document.getElementById('resSubjectsTbody');
+            tbody.innerHTML = '';
+            let total = 0;
+            const subjectsForPrint = [];
+
+            (student.scores || []).forEach((sc, idx) => {
+                const subName = hostLocalizedSubject(subjects[idx] || `Subject ${idx + 1}`);
+                const val = parseFloat(sc) || 0;
+                total += val;
+
+                const rowParts = subjectPartsFor_(breakdown[idx], parts);
+                let partsHtml = '';
+                if (rowParts.length) {
+                    const chips = rowParts.map(p =>
+                        `<span class="inline-block mr-3 whitespace-nowrap">${esc(p.label)}: <b class="text-slate-700 dark:text-slate-200">${p.value}</b><span class="text-slate-400">/${p.max}</span></span>`
+                    ).join('');
+                    partsHtml = `<div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">${chips}</div>`;
+                }
+
+                subjectsForPrint.push({ name: subName, score: val, parts: rowParts });
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 font-bold text-slate-500 align-top">${idx + 1}</td>
+                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${esc(subName)}${partsHtml}</td>
+                        <td class="p-3 text-center font-bold text-indigo-600 dark:text-indigo-400 align-top">${val}</td>
+                    </tr>`;
+            });
+
+            const subjectCount = subjectsForPrint.length || subjects.length;
+            const avg = subjectCount > 0 ? (total / subjectCount).toFixed(1) : "0.0";
+            const passed = parseFloat(avg) >= 50;
+            const statusText = passed
+                ? (currentHostLang === 'am' ? 'አልፏል' : 'PASS')
+                : (currentHostLang === 'am' ? 'አላለፈም' : 'FAIL');
+
+            const maxTotal = subjectCount * 100;
+            document.getElementById('resTotalScore').innerText = `${total} / ${maxTotal}`;
+            document.getElementById('resAvgScore').innerText = avg + "%";
+            const statusEl = document.getElementById('resStatus');
+            statusEl.innerText = statusText;
+            statusEl.className = passed
+                ? 'text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400'
+                : 'text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400';
+
+            // The 6-digit code is the student's private key and is deliberately
+            // NOT part of the printable model.
+            lastResultData = {
+                name: student.name,
+                gradeClass: gradeClassText,
+                semester: semesterText,
+                subjects: subjectsForPrint,
+                subjectCount: subjectCount,
+                total: total,
+                avg: avg,
+                passed: passed,
+                statusText: statusText
+            };
+        }
+
+        let semCompareChartInstance = null;
+
+        async function claimStudentCard() {
+            const year = document.getElementById('cardYear').value;
+            const grade = document.getElementById('cardGrade').value;
+            const stream = document.getElementById('cardStream') ? document.getElementById('cardStream').value : '';
+            const section = document.getElementById('cardSection').value;
+            const code = document.getElementById('cardCode').value.trim();
+            const name = document.getElementById('cardName').value.trim();
+
+            if (!year || !grade || !section || !code || !name) {
+                alert(currentHostLang === 'am' ? 'እባክዎ ሁሉንም መስኮች ይሙሉ!' : 'Please fill in all fields!');
+                return;
+            }
+            if (parseInt(grade) >= 11 && !stream) {
+                alert(currentHostLang === 'am' ? 'እባክዎ የትምህርት ዘርፍ ይምረጡ!' : 'Please select a Stream!');
+                return;
+            }
+            if (!studentEmail || !studentPassword) { logoutStudent(); return; }
+
+            const btn = document.querySelector('#cardForm button[onclick="claimStudentCard()"]');
+            const oldHtml = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+            let data;
+            try {
+                data = await postToBackend({
+                    action: 'claimCard', year, grade, stream: parseInt(grade) >= 11 ? stream : '',
+                    section, code, name, email: studentEmail, password: studentPassword, host: 'host'
+                });
+            } catch (e) {
+                alert(currentHostLang === 'am' ? 'ከ Server ጋር መገናኘት አልተቻለም።' : 'Could not reach the server.');
+                if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
+                return;
+            }
+            if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
+
+            if (!data || !data.ok) {
+                alert(currentHostLang === 'am' ? 'ጥያቄው አልተሳካም።' : 'The request failed.');
+                return;
+            }
+
+            const accountMsg = accountStatusMessage(data.status);
+            if (accountMsg) { alert(accountMsg); return; }
+
+            if (data.status === 'card_not_ready') {
+                alert(currentHostLang === 'am'
+                    ? 'ካርድዎ ገና አልተዘጋጀም። እባክዎ ትምህርት ቤቱ ካርዶቹን እስኪያመነጭ ይጠብቁ።'
+                    : 'Your card is not ready yet. Please wait until the school generates the cards.');
+                return;
+            }
+            if (data.status !== 'found') {
+                alert(currentHostLang === 'am' ? 'ኮድና ስም አልተገኘም።' : 'Code and name not found.');
+                return;
+            }
+
+            document.getElementById('cardForm').classList.add('hidden');
+            document.getElementById('cardResult').classList.remove('hidden');
+            setChromeForResultView(true);
+            renderSemCompareChart(year, grade, section, code, name);
+
+            document.getElementById('downloadCardFileBtn').onclick = function() {
+                const byteChars = atob(data.pdfBase64);
+                const byteNumbers = new Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+                const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = data.fileName || 'result-card.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            };
+        }
+
+        async function renderSemCompareChart(year, grade, section, code, name) {
+            const canvas = document.getElementById('semCompareChart');
+            const numbersBox = document.getElementById('semCompareNumbers');
+            if (semCompareChartInstance) semCompareChartInstance.destroy();
+            if (numbersBox) numbersBox.innerHTML = '';
+
+            try {
+                const qs = new URLSearchParams({
+                    action: 'semCompare', year, grade, section, code, name,
+                    email: studentEmail, password: studentPassword, host: 'host'
+                });
+                const res = await fetch(noCacheUrl(`${BACKEND_URL}?${qs.toString()}`), { cache: 'no-store' });
+                const data = await res.json();
+                if (!data || !data.ok || data.status !== 'found') return;
+
+                semCompareChartInstance = new Chart(canvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: (data.subjects || []).map(s => hostLocalizedSubject(s)),
+                        datasets: [
+                            { label: currentHostLang === 'am' ? '1ኛ ሴሚስተር' : '1st Semester', data: data.sem1, borderRadius: 5, maxBarThickness: 32 },
+                            { label: currentHostLang === 'am' ? '2ኛ ሴሚስተር' : '2nd Semester', data: data.sem2, borderRadius: 5, maxBarThickness: 32 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } },
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: currentHostLang === 'am' ? '1ኛ vs 2ኛ ሴሚስተር ንጽጽር' : '1st vs 2nd Semester Comparison' }
+                        }
+                    }
+                });
+
+                const avg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+                const sum = arr => arr.reduce((a, b) => a + b, 0);
+                const a1 = avg(data.sem1), a2 = avg(data.sem2);
+                if (numbersBox) {
+                    numbersBox.innerHTML = `
+                        <div class="bg-indigo-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-indigo-100 dark:border-slate-700">
+                            <span class="block text-xs font-bold text-slate-500 dark:text-slate-400">${currentHostLang === 'am' ? '1ኛ ሴሚስተር' : '1st Semester'}</span>
+                            <span class="text-lg font-black text-slate-900 dark:text-white">${sum(data.sem1)}</span>
+                            <span class="block text-sm font-bold text-indigo-600 dark:text-indigo-400">${a1.toFixed(1)}%</span>
+                        </div>
+                        <div class="bg-emerald-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-emerald-100 dark:border-slate-700">
+                            <span class="block text-xs font-bold text-slate-500 dark:text-slate-400">${currentHostLang === 'am' ? '2ኛ ሴሚስተር' : '2nd Semester'}</span>
+                            <span class="text-lg font-black text-slate-900 dark:text-white">${sum(data.sem2)}</span>
+                            <span class="block text-sm font-bold text-emerald-600 dark:text-emerald-400">${a2.toFixed(1)}%</span>
+                        </div>`;
+                }
+            } catch (e) {
+                console.warn('Could not load semester comparison:', e);
+            }
+        }
+
+        function resetCardForm() {
+            document.getElementById('cardResult').classList.add('hidden');
+            document.getElementById('cardForm').classList.remove('hidden');
+            document.getElementById('cardCode').value = '';
+            document.getElementById('cardName').value = '';
+            setChromeForResultView(false);
+        }
+
+        const hostTranslations = {
+            am: {
+                viewResult: 'ውጤትዎን ይዩ',
+                formSub: 'እባክዎ የትምህርት ዘመን፣ ሴሚስተር፣ ክፍል፣ ሰክሽን፣ የ 6 ዲጂት ኮድ እና ሙሉ ስምዎን ያስገቡ።',
+                yearLabel: 'የትምህርት ዘመን', streamLabel: 'የትምህርት ዘርፍ', semesterLabel: 'ሴሚስተር (Semester)', gradeLabel: 'ክፍል (Grade)', sectionLabel: 'ሰክሽን (Section)', codeLabel: 'የ 6 ዲጂት ኮድ (6-Digit Code)', nameLabel: 'የተማሪ ሙሉ ስም (Full Name)',
+                showResults: 'ውጤቴን አሳይ', searchAnother: 'ሌላ ፈልግ', codeShort: 'ኮድ', classShort: 'ክፍል', semesterShort: 'ሴሚስተር', noShort: 'ተራ ቁጥር', subjectShort: 'የትምህርት ዓይነት', scoreShort: 'ያመጣው ውጤት (100%)', totalShort: 'ጠቅላላ ድምር', averageShort: 'አማካይ ውጤት', statusShort: 'ሁኔታ', downloadPdf: 'PDF አውርድ',
+                tabViewResult: 'ውጤት ይመልከቱ', tabReceiveCard: 'ካርድ ተቀበል',
+                receiveCardTitle: 'ካርድዎን ይቀበሉ', receiveCardSub: 'እባክዎ የትምህርት ዘመን፣ ክፍል፣ ሰክሽን፣ የ6 ዲጂት ኮድ እና ሙሉ ስም ያስገቡ።',
+                receiveCardBtn: 'ካርድ ተቀበል', cardReadyTitle: 'ካርድዎ ተዘጋጅቷል!', downloadCardFile: 'ካርድ አውርድ (PDF)',
+                portalTitle: 'የተማሪዎች ውጤት ማረጋገጫ ፖርታል',
+                authGateTitle: 'ውጤትዎን ለማየት ይግቡ',
+                authGateSub: 'ውጤት ለማየትም ካርድ ለመቀበልም መጀመሪያ አካውንት መክፈት እና መግባት ያስፈልጋል።',
+                authWelcomeText: 'እንኳን ደህና መጡ!',
+                authTabLogin: 'ግባ (Login)', authTabSignup: 'አካውንት ክፈት',
+                loginBtnText: 'ግባ', signupBtnText: 'አካውንት ክፈት',
+                signupSendCodeBtnText: 'የማረጋገጫ ኮድ ላክ', signupCodePlaceholder: '6 አሃዝ ኮድ',
+                deleteAccountBtn: 'አካውንት ሰርዝ (ኮድዎ ከተቀየረ)',
+                logoutBtn: 'ውጣ',
+                passwordPlaceholder: '••••••••', passwordPlaceholderPlain: 'ፓስወርድ', passwordConfirmPlaceholder: 'ፓስወርድ በድጋሚ',
+                printFullName: 'ሙሉ ስም', printGradeClass: 'ክፍልና ሰክሽን', printSemester: 'ሴሚስተር', printDate: 'የታተመበት ቀን',
+                printSubjectCol: 'የትምህርት ዓይነት', printScoreCol: 'ውጤት (100)',
+                printTotalBox: 'ጠቅላላ ድምር', printAvgBox: 'አማካይ', printStatusBox: 'ሁኔታ', printSemBox: 'ሴሚስተር',
+                footerText: 'የተማሪዎች ውጤት ማረጋገጫ ሲስተም © 2026'
+            },
+            en: {
+                viewResult: 'View your Result',
+                formSub: 'Please enter the academic year, semester, grade, section, 6-digit code and your full name.',
+                yearLabel: 'Academic Year', streamLabel: 'Stream', semesterLabel: 'Semester', gradeLabel: 'Grade', sectionLabel: 'Section', codeLabel: '6-Digit Code', nameLabel: 'Student Full Name',
+                showResults: 'Show my Results', searchAnother: 'Search another', codeShort: 'Code', classShort: 'Grade', semesterShort: 'Semester', noShort: 'No.', subjectShort: 'Subject', scoreShort: 'Score (100%)', totalShort: 'Total', averageShort: 'Average', statusShort: 'Status', downloadPdf: 'Download PDF',
+                tabViewResult: 'View Result', tabReceiveCard: 'Receive Card',
+                receiveCardTitle: 'Receive your Card', receiveCardSub: 'Please enter the academic year, grade, section, 6-digit code and full name.',
+                receiveCardBtn: 'Receive Card', cardReadyTitle: 'Your Card is Ready!', downloadCardFile: 'Download Card (PDF)',
+                portalTitle: 'Student Achievement Verification Portal',
+                authGateTitle: 'Log in to view your result',
+                authGateSub: 'You need to create an account and log in before viewing a result or receiving a card.',
+                authWelcomeText: 'Welcome!',
+                authTabLogin: 'Log in', authTabSignup: 'Sign up',
+                loginBtnText: 'Log in', signupBtnText: 'Sign up',
+                signupSendCodeBtnText: 'Send Verification Code', signupCodePlaceholder: '6-digit code',
+                deleteAccountBtn: 'Delete account (if your code changed)',
+                logoutBtn: 'Log out',
+                passwordPlaceholder: '••••••••', passwordPlaceholderPlain: 'Password', passwordConfirmPlaceholder: 'Confirm password',
+                printFullName: 'Full Name', printGradeClass: 'Grade & Class', printSemester: 'Semester', printDate: 'Date Generated',
+                printSubjectCol: 'Subject', printScoreCol: 'Score (100)',
+                printTotalBox: 'TOTAL SCORE', printAvgBox: 'AVERAGE', printStatusBox: 'STATUS', printSemBox: 'SEMESTER',
+                footerText: 'Student Achievement Verification System © 2026'
+            }
+        };
+
+        const hostSubjectMap={"English":"እንግሊዝኛ","Maths":"ሂሳብ","Physics":"ፊዚክስ","Biology":"ባዮሎጂ","Chemistry":"ኬሚስትሪ","Civics":"ሲቪክስ","Economics":"ኢኮኖሚክስ","History":"ታሪክ","HPE":"ጤና እና ስፖርት","ICT":"አይሲቲ","አማርኛ":"አማርኛ","Kaffinoonoo":"ካፊኖኖ","Geography":"ጂኦግራፊ","Technical Drawing":"ቴክኒክ ስዕል","Business":"ቢዝነስ","SAT":"SAT","Ag":"ግብርና","CM":"ሲኤም","Jornalism":"ጋዜጠኝነት"};
+        const hostSubjectReverse=Object.fromEntries(Object.entries(hostSubjectMap).map(([e,a])=>[a,e]));
+        let currentHostLang = localStorage.getItem('appLanguage') === 'am' ? 'am' : 'en';
+
+        // Renders `text` into #elId as individually-animated, colour-cycling
+        // letters -- the "bouncy welcome title" effect on the login screen.
+        // IMPORTANT: this must be initialized BEFORE the first changeLanguage()
+        // call because changeLanguage() immediately renders the welcome title.
+        const BOUNCE_PALETTE = ['#4f46e5', '#059669', '#d97706', '#e11d48', '#0284c7', '#7c3aed', '#db2777'];
+
+        function hostLocalizedSubject(n){return currentHostLang==='am'?(hostSubjectMap[n]||n):(hostSubjectReverse[n]||n);}
+        changeLanguage(currentHostLang);
+        document.documentElement.style.visibility = 'visible';
+        // Never leave the whole document hidden if a later optional script throws.
+        window.addEventListener('error', function(){ document.documentElement.style.visibility = 'visible'; });
+        function renderBouncyText(elId, text) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.innerHTML = '';
+            Array.from(String(text || '')).forEach((ch, i) => {
+                const span = document.createElement('span');
+                span.textContent = ch === ' ' ? '\u00A0' : ch;
+                span.style.color = BOUNCE_PALETTE[i % BOUNCE_PALETTE.length];
+                span.style.animationDelay = (i * 0.07).toFixed(2) + 's';
+                el.appendChild(span);
+            });
+        }
+
+        function changeLanguage(lang) {
+            currentHostLang = (lang === 'en') ? 'en' : 'am';
+            localStorage.setItem('appLanguage', currentHostLang);
+            const dict = hostTranslations[currentHostLang] || hostTranslations.am;
+            document.documentElement.lang = currentHostLang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key] !== undefined) el.textContent = dict[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key] !== undefined) el.placeholder = dict[key];
+            });
+            if (dict.portalTitle) document.title = `${SCHOOL_NAME} — ${dict.portalTitle}`;
+            applySchoolName();
+            renderBouncyText('authWelcomeTitle', dict.authWelcomeText);
+
+            const langSelectEl = document.getElementById('langSelect');
+            if (langSelectEl) langSelectEl.value = currentHostLang;
+            const authLangSelectEl = document.getElementById('authLangSelect');
+            if (authLangSelectEl) authLangSelectEl.value = currentHostLang;
+
+            populateYears();
+            const sem = document.getElementById('lookupSemester');
+            if (sem) {
+                const oldSem = sem.value;
+                sem.innerHTML = `
+                    <option value="">${currentHostLang === 'am' ? '-- ሴሚስተር ይምረጡ --' : '-- Select Semester --'}</option>
+                    <option value="sem1">${currentHostLang === 'am' ? '1ኛ ሴሚስተር' : '1st Semester'}</option>
+                    <option value="sem2">${currentHostLang === 'am' ? '2ኛ ሴሚስተር' : '2nd Semester'}</option>`;
+                if (oldSem) sem.value = oldSem;
+            }
+            populateGrades();
+            const stream = document.getElementById('lookupStream');
+            if (stream) {
+                const oldStream = stream.value || 'Natural';
+                stream.innerHTML = `
+                    <option value="Natural">${currentHostLang === 'am' ? 'የተፈጥሮ ሳይንስ' : 'Natural Science'}</option>
+                    <option value="Social">${currentHostLang === 'am' ? 'የማህበራዊ ሳይንስ' : 'Social Science'}</option>`;
+                stream.value = oldStream;
+            }
+            const cardStream = document.getElementById('cardStream');
+            if (cardStream) {
+                const oldCardStream = cardStream.value || 'Natural';
+                cardStream.innerHTML = `
+                    <option value="Natural">${currentHostLang === 'am' ? 'የተፈጥሮ ሳይንስ' : 'Natural Science'}</option>
+                    <option value="Social">${currentHostLang === 'am' ? 'የማህበራዊ ሳይንስ' : 'Social Science'}</option>`;
+                cardStream.value = oldCardStream;
+            }
+            populateStreamsOrSections();
+            populateCardYears();
+            populateCardGrades();
+
+            const theme = document.getElementById('themeText');
+            if (theme) theme.textContent = isDarkMode
+                ? (currentHostLang === 'am' ? 'ነጭ ጀርባ' : 'White BG')
+                : (currentHostLang === 'am' ? 'ጥቁር ጀርባ' : 'Black BG');
+
+            // Re-draw an already displayed result so EVERY part of it follows
+            // the new language (subjects, activity labels, grade, section,
+            // semester and status).
+            const resultCard = document.getElementById('resultCard');
+            if (lastLookup && resultCard && !resultCard.classList.contains('hidden')) renderResultCard();
+        }
+
+        /* ==================================================================
+           PDF DOWNLOAD — school report-card layout
+           ------------------------------------------------------------------
+           Only the semester the student actually looked up is printed (never
+           both), there is no photo, and the 6-digit code never appears.
+           The sheet is a fixed 760px wide, Tailwind-free block with
+           table-layout:fixed columns, which is what keeps the subject column
+           from sliding off the page the way it did before.
+           ================================================================== */
+        function buildPrintSheetHTML() {
+            if (!lastResultData) return '';
+            const d = lastResultData;
+            const dict = hostTranslations[currentHostLang] || hostTranslations.am;
+            const today = new Date().toLocaleDateString('en-GB');
+            const maxTotal = d.subjectCount * 100;
+
+            const infoRow = (label, value) => `
+                <tr>
+                    <td style="padding:5px 0;font-size:13px;color:#475569;font-weight:800;width:160px;">${esc(label)}:</td>
+                    <td style="padding:5px 0;font-size:13px;color:#0f172a;font-weight:700;">${esc(value)}</td>
+                </tr>`;
+
+            const cell = 'border:1.5px solid #cbd5e1;padding:9px 12px;font-size:13px;color:#0f172a;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;';
+            const head = 'border:1.5px solid #4338ca;padding:9px 12px;font-size:12.5px;font-weight:800;background:#4f46e5;color:#ffffff;text-align:left;letter-spacing:.3px;';
+
+            const rows = (d.subjects || []).map((s, i) => {
+                const zebra = i % 2 === 1 ? 'background:#f5f7ff;' : 'background:#ffffff;';
+                const partsLine = (s.parts && s.parts.length)
+                    ? `<div style="margin-top:5px;font-size:11px;color:#334155;line-height:1.9;">` +
+                      s.parts.map(p => `<span style="display:inline-block;margin-right:13px;">${esc(p.label)}: <b style="color:#0f172a;">${p.value}</b><span style="color:#64748b;">/${p.max}</span></span>`).join('') +
+                      `</div>`
+                    : '';
+                return `<tr style="${zebra}">
+                    <td style="${cell}${zebra}text-align:center;color:#4338ca;font-weight:800;">${i + 1}</td>
+                    <td style="${cell}${zebra}font-weight:800;">${esc(s.name)}${partsLine}</td>
+                    <td style="${cell}${zebra}text-align:center;font-weight:900;color:#1d4ed8;font-size:14.5px;">${s.score}</td>
+                </tr>`;
+            }).join('');
+
+            const boxLabel = 'font-size:10px;letter-spacing:1.2px;color:rgba(255,255,255,.85);font-weight:800;display:block;margin-bottom:5px;';
+            const boxValue = 'font-size:19px;font-weight:900;display:block;color:#ffffff;';
+            const box = (bg, label, valueHtml) => `
+                <td style="background:${bg};border-radius:12px;padding:13px 10px;text-align:center;">
+                    <span style="${boxLabel}">${esc(label)}</span>
+                    <span style="${boxValue}">${valueHtml}</span>
+                </td>`;
+
+            const statusBg = d.passed
+                ? 'linear-gradient(135deg,#059669,#047857)'
+                : 'linear-gradient(135deg,#e11d48,#be123c)';
+
+            return `
+            <div id="printSheetInner" style="width:100%;box-sizing:border-box;background:#ffffff;color:#0f172a;padding:26px 30px;font-family:'Noto Sans Ethiopic','Nyala',Arial,Helvetica,sans-serif;">
+
+                <div style="text-align:center;padding-bottom:14px;margin-bottom:18px;border-bottom:4px solid #4f46e5;">
+                    <div style="font-size:24px;font-weight:900;color:#312e81;letter-spacing:.5px;">\ud83c\udf93 ${esc(SCHOOL_NAME)}</div>
+                    <div style="font-size:11.5px;letter-spacing:3px;color:#4f46e5;margin-top:6px;font-weight:800;">${esc(SCHOOL_TAGLINE[currentHostLang] || SCHOOL_TAGLINE.en)}</div>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;margin-bottom:18px;background:#f8fafc;border-radius:10px;padding:4px;">
+                    ${infoRow(dict.printFullName, d.name)}
+                    ${infoRow(dict.printGradeClass, d.gradeClass)}
+                    ${infoRow(dict.printSemester, d.semester)}
+                    ${infoRow(dict.printDate, today)}
+                </table>
+
+                <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+                    <colgroup>
+                        <col style="width:46px;">
+                        <col>
+                        <col style="width:115px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th style="${head}text-align:center;">${esc(dict.noShort)}</th>
+                            <th style="${head}">${esc(dict.printSubjectCol)}</th>
+                            <th style="${head}text-align:center;">${esc(dict.printScoreCol)}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+
+                <table style="width:100%;border-collapse:separate;border-spacing:10px 0;margin-top:20px;table-layout:fixed;">
+                    <tr>
+                        ${box('linear-gradient(135deg,#4f46e5,#4338ca)', dict.printTotalBox, `${d.total}<span style="font-size:11px;color:rgba(255,255,255,.8);font-weight:700;"> / ${maxTotal}</span>`)}
+                        ${box('linear-gradient(135deg,#7c3aed,#6d28d9)', dict.printAvgBox, `${d.avg}%`)}
+                        ${box(statusBg, dict.printStatusBox, esc(d.statusText))}
+                        ${box('linear-gradient(135deg,#1e293b,#0f172a)', dict.printSemBox, `<span style="font-size:14px;">${esc(d.semester)}</span>`)}
+                    </tr>
+                </table>
+
+                <div style="margin-top:22px;border-top:1.5px solid #e2e8f0;padding-top:11px;font-size:10.5px;color:#64748b;text-align:center;font-weight:600;">
+                    ${esc(SCHOOL_NAME)} — ${esc(dict.footerText)}
+                </div>
+            </div>`;
+        }
+
+        async function downloadStudentCardPDF() {
+            const card = document.getElementById('resultCard');
+            const button = document.getElementById('downloadCardPdfBtn');
+            if (!lastResultData || !card || card.classList.contains('hidden')) {
+                alert(currentHostLang === 'am' ? 'እባክዎ መጀመሪያ ውጤትዎን ይፈልጉ።' : 'Please search for your result first.');
+                return;
+            }
+
+            const wrap = document.getElementById('printSheetWrap');
+            const sheet = document.getElementById('printSheet');
+            const backdrop = document.getElementById('printBackdrop');
+            sheet.innerHTML = buildPrintSheetHTML();
+
+            const safeName = String(lastResultData.name || 'Student')
+                .trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'Student';
+            const semTag = (lastLookup && lastLookup.sem === 'sem2') ? 'Sem2' : 'Sem1';
+
+            const wasDark = document.documentElement.classList.contains('dark');
+            if (wasDark) document.documentElement.classList.remove('dark');
+            backdrop.classList.add('printing');
+            wrap.classList.add('printing');
+            window.scrollTo(0, 0);
+
+            const oldText = button ? button.innerHTML : '';
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = currentHostLang === 'am'
+                    ? '<i class="fa-solid fa-spinner fa-spin"></i><span>PDF \u12A5\u12E8\u1270\u12D8\u1300\u1290 \u1290\u12CD...</span>'
+                    : '<i class="fa-solid fa-spinner fa-spin"></i><span>Preparing PDF...</span>';
+            }
+
+            try {
+                if (typeof html2canvas !== 'function' || !window.jspdf || !window.jspdf.jsPDF) {
+                    throw new Error('pdf_libs_missing');
+                }
+
+                // Wait one paint so the sheet is fully laid out with its
+                // REAL, unscaled fonts before we photograph it. Earlier this
+                // page used CSS `zoom` to shrink the sheet so it would fit on
+                // one page, but html2canvas does not reliably support the
+                // `zoom` property for text layout -- it produced garbled,
+                // overlapping letters. Instead we now render the sheet at
+                // its natural size (crisp, correctly spaced text) and then
+                // scale the resulting IMAGE -- not the DOM -- down to fit a
+                // single A4 page. Scaling a bitmap is always safe.
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                const canvas = await html2canvas(sheet, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+                const marginMm = 8;
+                const pageWidthMm = pdf.internal.pageSize.getWidth();
+                const pageHeightMm = pdf.internal.pageSize.getHeight();
+                const maxWidthMm = pageWidthMm - marginMm * 2;
+                const maxHeightMm = pageHeightMm - marginMm * 2;
+
+                let imgWidthMm = maxWidthMm;
+                let imgHeightMm = (canvas.height / canvas.width) * imgWidthMm;
+
+                if (imgHeightMm > maxHeightMm) {
+                    const shrink = maxHeightMm / imgHeightMm;
+                    imgHeightMm = maxHeightMm;
+                    imgWidthMm = imgWidthMm * shrink;
+                }
+
+                const xMm = marginMm + (maxWidthMm - imgWidthMm) / 2;
+                const yMm = marginMm;
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                pdf.addImage(imgData, 'JPEG', xMm, yMm, imgWidthMm, imgHeightMm, undefined, 'FAST');
+                pdf.save(`Result_${safeName}_${semTag}.pdf`);
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                alert(currentHostLang === 'am'
+                    ? 'PDF \u121B\u12CD\u1228\u12F5 \u12A0\u120D\u1270\u127B\u1208\u121D\u1362 \u12E8Print \u12A0\u121B\u122B\u132D\u1295 \u12ED\u1320\u1240\u121C\u1362'
+                    : 'PDF download failed. Please try again.');
+                backdrop.classList.remove('printing');
+            } finally {
+                wrap.classList.remove('printing');
+                backdrop.classList.remove('printing');
+                if (wasDark) document.documentElement.classList.add('dark');
+                if (button) { button.disabled = false; button.innerHTML = oldText; }
+            }
+        }
+
+
+
+        function resetSearch() {
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('searchCard').classList.remove('hidden');
+            document.getElementById('lookupCode').value = '';
+            document.getElementById('lookupName').value = '';
+            lastLookup = null;
+            lastResultData = null;
+            setChromeForResultView(false);
+            populateGrades();
+        }
+    </script>
+</body>
+</html>
